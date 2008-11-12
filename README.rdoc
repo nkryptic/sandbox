@@ -4,7 +4,7 @@
 
 == DESCRIPTION:
 
-Inspired by Python's "virtualenv":http://pypi.python.org/pypi/virtualenv project, this gem will allow you to create multiple self-contained workspaces.  The workspace will have it's own ruby and gem binaries, as well as a script to activate/deactivate the workspace.
+Inspired by Python's virtualenv[http://pypi.python.org/pypi/virtualenv] project, this gem will allow you to create multiple self-contained workspaces.  The workspace will have it's own ruby and gem binaries, as well as a script to activate/deactivate the workspace.
 
 == FEATURES/PROBLEMS:
 
