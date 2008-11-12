@@ -1,0 +1,6 @@
+pkg
+doc
+coverage
+tmp
+Manifest
+.DS_Store
