@@ -3,63 +3,49 @@ require 'workspace'
 
 module Workspace
   class CLI
+    
     class << self
-      attr_writer :stdout
-    end
-    def self.execute( arguments=[] )
-
-      # NOTE: the option -p/--path= is given as an example, and should be replaced in your application.
-      @stdout ||= STDOUT
-      options = {
-        :path     => '~'
-      }
-      mandatory_options = %w(  )
-
-      parser = OptionParser.new do |opts|
-        opts.banner = <<-BANNER.gsub(/^          /,'')
-          This application is wonderful because...
-
-          Usage: #{File.basename($0)} [options]
-
-          Options are:
-        BANNER
-        opts.separator ""
-        opts.on("-p", "--path=PATH", String,
-                "This is a sample message.",
-                "For multiple lines, add more strings.",
-                "Default: ~") { |arg| options[:path] = arg }
-        opts.on("-h", "--help",
-                "Show this help message.") { stdout.puts opts; exit }
-        opts.parse!(arguments)
-
-        if mandatory_options && mandatory_options.find { |option| options[option.to_sym].nil? }
-          @stdout.puts opts; exit
-        end
+      # attr_writer :step_mother, :executor, :features
+      def banner
+        return @output if @output
+        @output = <<-OUT
+        Usage: workspace [-h|-v] command [options]
+        
+        available commands:
+        OUT
+        @output = @output.split("\n").collect{|l|l.gsub(/^\s+/,'')}.join("\n")
       end
-
-      path = options[:path]
-
-      # do stuff
-      @stdout.puts "To update this executable, look in lib/workspace/cli.rb"      
+      
+      def execute( args = ARGV )
+        case args.first
+        when '-v', '--version'
+          puts Workspace::Version::STRING
+          exit( 0 )
+        when '-h', '--help', nil
+          puts banner
+          exit( 0 )
+        when /^\-/
+          puts "Error: unknown option #{args.first}"
+          puts banner
+          exit( 1 )
+        when 'help'
+          puts banner
+          exit( 0 )
+        end
+        # @execute_called = true
+        # parse( ARGV ).execute!( @step_mother, @executor, @features )
+      end
+    
+      # def execute_called?
+      #   @execute_called
+      # end
+    
+      # def parse( args )
+      #   cli = new
+      #   cli.parse_options!(args)
+      #   cli
+      # end
     end
-  #     class << self
-  #       attr_writer :step_mother, :executor, :features
-  # 
-  #       def execute
-  #         @execute_called = true
-  #         parse( ARGV ).execute!( @step_mother, @executor, @features )
-  #       end
-  # 
-  #       def execute_called?
-  #         @execute_called
-  #       end
-  # 
-  #       def parse( args )
-  #         cli = new
-  #         cli.parse_options!(args)
-  #         cli
-  #       end
-  #     end
   # 
   #     attr_reader :options
   #     FORMATS = %w{pretty profile progress html autotest}

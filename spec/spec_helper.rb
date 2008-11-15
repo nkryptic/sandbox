@@ -18,4 +18,29 @@ Spec::Runner.configure do |config|
   # config.mock_with :mocha
   # config.mock_with :flexmock
   # config.mock_with :rr
+  
+  def capture(*streams)
+    results = []
+    streams.collect! do |stream|
+      stream = stream.to_s
+    end
+    begin
+      streams.each do |stream|
+        eval "$#{stream} = StringIO.new"
+      end
+      yield
+      streams.each do |stream|
+        results << eval("$#{stream}").string
+      end
+    ensure
+      streams.each do |stream|
+        eval("$#{stream} = #{stream.upcase}")
+      end
+    end
+ 
+    return *results
+  end
+  
+  alias silence capture
+  
 end
