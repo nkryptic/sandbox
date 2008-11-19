@@ -2,36 +2,39 @@ require 'optparse'
 require 'workspace'
 
 module Workspace
-  class CLI
+  class CommandManager
+    include Singleton
+    attr_reader :commands
     
+    def initialize
+      @commands = {}
+    end
+    
+    def register( name, klass )
+      @command[ name ] = klass
+    end
+    
+    def actions
+      return @action_names if @action_names
+      @action_names = @commands.keys
+      @action_names.sort
+    end
+  end
+  
+  class Command
+    def self.inherited( klass )
+      parts = klass.to_s.split( '::' )
+      name = parts.last.downcase
+      CommandManager.instance.register( name, klass )
+    end
+  end
+  
+  class CLI
     class << self
       # attr_writer :step_mother, :executor, :features
-      def banner
-        return @output if @output
-        @output = <<-OUT
-        Usage: workspace [-h|-v] command [options]
-        
-        available commands:
-        OUT
-        @output = @output.split("\n").collect{|l|l.gsub(/^\s+/,'')}.join("\n")
-      end
       
       def execute( args = ARGV )
-        case args.first
-        when '-v', '--version'
-          puts Workspace::Version::STRING
-          exit( 0 )
-        when '-h', '--help', nil
-          puts banner
-          exit( 0 )
-        when /^\-/
-          puts "Error: unknown option #{args.first}"
-          puts banner
-          exit( 1 )
-        when 'help'
-          puts banner
-          exit( 0 )
-        end
+        parse( args ).execute!
         # @execute_called = true
         # parse( ARGV ).execute!( @step_mother, @executor, @features )
       end
@@ -40,33 +43,98 @@ module Workspace
       #   @execute_called
       # end
     
-      # def parse( args )
-      #   cli = new
-      #   cli.parse_options!(args)
-      #   cli
+      def parse( args )
+        cli = new
+        cli.parse_options!(args)
+        cli
+      end
+    end
+    
+    # def initialize( out_stream = STDOUT, error_stream = STDERR )
+    def initialize
+      # @out_stream = out_stream
+      # @error_stream = error_stream
+      # @paths = []
+      # @options = {
+      #   :require => nil,
+      #   :lang    => 'en',
+      #   :dry_run => false,
+      #   :source  => true,
+      #   :snippets => true,
+      #   :formats => {},
+      #   :excludes => [],
+      #   :scenario_names => nil
+      # }
+      # @active_format = DEFAULT_FORMAT
+      @command_manager = Workspace::CommandManager.instance
+    end
+    
+    attr_reader :command, :options
+    attr_reader :debug
+    
+    def parser #:nodoc:
+      @parser ||= OptionParser.new do |opts|
+        
+        opts.banner = generate_banner
+        
+        opts.on( "-h", "--help", "Display this help message." ) do
+          puts usage
+          exit
+        end
+        
+        opts.on( "-V", "--version", "Display the version." ) do
+          puts "workspace v#{ Workspace::Version::STRING }"
+          exit
+        end
+        
+        opts.on( "-v", "--[no-]verbose", "Run verbosely (default: false)" ) do |v|
+          options[:verbose] = v
+        end
+        
+      end
+    end
+    
+    def parse_options!( args )
+      # pull off known options until a command is met?
+      while arg = args.shift do
+        cmd = parser.parse!( [cmd] )
+        if cmd
+          # instantiate command, passing rest of args
+        end
+      end
+      
+      # case cmd
+      # when '-v', '--version'
+      #   puts Workspace::Version::STRING
+      #   exit( 0 )
+      # when '-h', '--help', nil
+      #   puts banner
+      #   exit( 0 )
+      # when /^\-/
+      #   puts "Error: unknown option #{args.first}"
+      #   puts banner
+      #   exit( 1 )
+      # when 'help'
+      #   puts banner
+      #   exit( 0 )
       # end
+    end
+    
+    def banner
+      return @banner if @banner
+      @banner = <<-OUT
+      Usage: workspace [-h|-v] command [options]
+      
+      available commands:
+      OUT
+      @banner = @banner.split("\n").collect{|l|l.gsub(/^\s+/,'')}.join("\n")
     end
   # 
   #     attr_reader :options
   #     FORMATS = %w{pretty profile progress html autotest}
   #     DEFAULT_FORMAT = 'pretty'
   # 
-  #     def initialize( out_stream = STDOUT, error_stream = STDERR )
-  #       @out_stream = out_stream
-  #       @error_stream = error_stream
-  #       @paths = []
-  #       @options = {
-  #         :require => nil,
-  #         :lang    => 'en',
-  #         :dry_run => false,
-  #         :source  => true,
-  #         :snippets => true,
-  #         :formats => {},
-  #         :excludes => [],
-  #         :scenario_names => nil
-  #       }
-  #       @active_format = DEFAULT_FORMAT
-  #     end
+
   # 
   #     def parse_options!(args)
   #       return parse_args_from_profile('default') if args.empty?

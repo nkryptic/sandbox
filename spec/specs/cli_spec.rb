@@ -69,11 +69,15 @@ describe Workspace::CLI, "execute" do
       stdout.should =~ /^Usage: /
       stdout.should =~ /available commands:/
     end
-    # 
-    # it "should provide a help message for command on 'command -h'" do
-    #   stdout = capture(:stdout) { Workspace::CLI.execute( ['command','-h'] ) }
-    #   stdout.should =~ /To update this executable/
-    # end
+    
+    it "should provide a help message for command on 'command -h'" do
+      stdout,stderr = capture(:stdout,:stderr) do
+        lambda { Workspace::CLI.execute( ['command','-h'] ) }.
+            should raise_error( SystemExit ) { |error| error.status.should == 0 }
+      end
+      stdout.should =~ /^Usage: /
+      stdout.should =~ /command command performs/
+    end
     # 
     # it "should provide a help message for command on 'help command'" do
     #   stdout = capture(:stdout) { Workspace::CLI.execute( ['help','command'] ) }
