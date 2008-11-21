@@ -3,22 +3,25 @@ require 'workspace'
 
 module Workspace
   class CommandManager
-    include Singleton
-    attr_reader :commands
-    
-    def initialize
-      @commands = {}
-    end
-    
-    def register( name, klass )
-      @command[ name ] = klass
-    end
-    
-    def actions
-      return @action_names if @action_names
-      @action_names = @commands.keys
-      @action_names.sort
-    end
+    # include Singleton
+    class << self
+      attr_reader :commands
+      
+      # def initialize
+      #   @commands = {}
+      # end
+      
+      def register( name, klass )
+        @commands ||= {}
+        @command[ name ] = klass
+      end
+      
+      # def actions
+      #   return @action_names if @action_names
+      #   @action_names = @commands.keys
+      #   @action_names.sort
+      # end
+  end
   end
   
   class Command
@@ -66,59 +69,253 @@ module Workspace
       #   :scenario_names => nil
       # }
       # @active_format = DEFAULT_FORMAT
-      @command_manager = Workspace::CommandManager.instance
+      @options = {
+        :debug => false
+      }
+      @command_manager = Workspace::CommandManager # .instance
     end
     
     attr_reader :command, :options
     attr_reader :debug
     
-    def parser #:nodoc:
-      @parser ||= OptionParser.new do |opts|
-        
-        opts.banner = generate_banner
-        
-        opts.on( "-h", "--help", "Display this help message." ) do
-          puts usage
-          exit
-        end
-        
-        opts.on( "-V", "--version", "Display the version." ) do
-          puts "workspace v#{ Workspace::Version::STRING }"
-          exit
-        end
-        
-        opts.on( "-v", "--[no-]verbose", "Run verbosely (default: false)" ) do |v|
-          options[:verbose] = v
-        end
-        
-      end
-    end
+    # def parser #:nodoc:
+    #   @parser ||= OptionParser.new do |opts|
+    #     
+    #     opts.banner = banner
+    #     
+    #     opts.on_tail( "-h", "--help", "Display this help message." ) do
+    #       puts opts
+    #       exit
+    #     end
+    #     
+    #     opts.on_tail( "-v", "--version", "Display the version." ) do
+    #       puts "workspace v#{ Workspace::Version::STRING }"
+    #       exit
+    #     end
+    #     
+    #     opts.on( "-d", "--debug", "Display all output" ) do
+    #       options[:debug] = true
+    #     end
+    #     
+    #   end
+    # end
     
+    # def parse_options!( args )
+    #   # split application options, command, and command options
+    #   args << '-h' if args.empty?
+    #   global_args = []
+    #   command_args = []
+    #   command = nil
+    #   while arg = args.shift do
+    #     if arg =~ /^-/
+    #       global_args << arg
+    #       global_args << args.shift if requires_arg?( arg )
+    #     else
+    #       command = arg.downcase
+    #       command_args = args
+    #       break
+    #     end
+    #   end
+    #   
+    #   begin
+    #     parser.parse!( global_options )
+    #   rescue OptionParser::ParseError => e
+    #     puts "Error: unknown option #{ e }"
+    #     puts parser
+    #     exit 1
+    #   end
+    # end
+    # 
+    # def requires_arg?( arg )
+    #   if arg =~ /^(--.*)=(.*)/
+    #     return false unless $2.blank?
+    #     arg = $1
+    #   elsif arg =~ /^(-[^-])(.*)/
+    #     return false unless $2.blank?
+    #     arg = $1
+    #   end
+    #   
+    #   len = arg.length
+    #   switches = global_switches.keys.select { |sw| arg == sw[0,len] }
+    #   if switches.size > 1
+    #     raise "Ambiguous option #{arg} matches [#{switches.join(', ')}]"
+    #   end
+    #   
+    #   if global_switches[ switches[0] ] == :need_arg
+    #     return true
+    #   end
+    #   
+    #   false
+    # end
+    # 
+    # def global_switches
+    #   @global_switches ||= parser.top.list.inject({}) do |hsh,switch|
+    #     case switch
+    #       when OptionParser::Switch::RequiredArgument, 
+    #            OptionParser::Switch::PlacedArgument
+    #         argtype = :need_arg
+    #       when OptionParser::Switch::OptionalArgument # -rblue or --red=blue
+    #         argtype = :opt_arg
+    #       when OptionParser::Switch::NoArgument
+    #         argtype = :no_arg
+    #     else
+    #       return hsh
+    #     end
+    #     short, long = switch.short.first, switch.long.first
+    #     hsh[ short ] = argtype if short
+    #     hsh[ long ] = argtype if long
+    #     hsh
+    #   end
+    # end
+    
+    # #################
+    # # older parse
+    # def parse_options!( args )
+    #   # split application options, command, and command options
+    #   case cmd
+    #   when '-v', '--version'
+    #     puts Workspace::Version::STRING
+    #     exit( 0 )
+    #   when '-h', '--help', nil
+    #     puts banner
+    #     exit( 0 )
+    #   when /^\-/
+    #     puts "Error: unknown option #{args.first}"
+    #     puts banner
+    #     exit( 1 )
+    #   when 'help'
+    #     puts banner
+    #     exit( 0 )
+    #   end
+    # end
+    # #################
+    # # older parse
     def parse_options!( args )
-      # pull off known options until a command is met?
-      while arg = args.shift do
-        cmd = parser.parse!( [cmd] )
-        if cmd
-          # instantiate command, passing rest of args
-        end
+      # split application options, command, and command options      
+      command_name = nil
+      command_options = []
+      arg = args.shift
+      case arg
+      when '-h', '--help', nil
+        command_name = 'help'
+      when '-v', '--version'
+        puts "workspace v#{ Workspace::Version::STRING }"
+        exit
+      when /^-/
+        command_name = 'help'
+        command_options << 'badoption' << args.shift
+      else
+        command_name = find_command( arg.to_s.downcase )
+        if command_name
+          command_options = args
+        else
+          command_options << arg.to_s.downcase
+          command_name = 'help'
       end
       
-      # case cmd
-      # when '-v', '--version'
-      #   puts Workspace::Version::STRING
-      #   exit( 0 )
-      # when '-h', '--help', nil
-      #   puts banner
-      #   exit( 0 )
-      # when /^\-/
-      #   puts "Error: unknown option #{args.first}"
-      #   puts banner
-      #   exit( 1 )
-      # when 'help'
-      #   puts banner
-      #   exit( 0 )
+      # if Workspace::CommandManager.has( command_name )
+      # end
+      # 
+      # unless @command
       # end
     end
+    # # END
+    # ########
+    
+    # ##############
+    # # FROM RUBYGEMS
+    # 
+    # def process_args(args)
+    #   args = args.to_str.split(/\s+/) if args.respond_to?(:to_str)
+    #   if args.size == 0
+    #     say Gem::Command::HELP
+    #     terminate_interaction(1)
+    #   end 
+    #   case args[0]
+    #   when '-h', '--help'
+    #     say Gem::Command::HELP
+    #     terminate_interaction(0)
+    #   when '-v', '--version'
+    #     say Gem::RubyGemsVersion
+    #     terminate_interaction(0)
+    #   when /^-/
+    #     alert_error "Invalid option: #{args[0]}.  See 'gem --help'."
+    #     terminate_interaction(1)
+    #   else
+    #     cmd_name = args.shift.downcase
+    #     cmd = find_command(cmd_name)
+    #     cmd.invoke(*args)
+    #   end
+    # end
+    # 
+    # def find_command(cmd_name)
+    #   possibilities = find_command_possibilities(cmd_name)
+    #   if possibilities.size > 1
+    #     raise "Ambiguous command #{cmd_name} matches [#{possibilities.join(', ')}]"
+    #   end
+    #   if possibilities.size < 1
+    #     raise "Unknown command #{cmd_name}"
+    #   end
+    # 
+    #   self[possibilities.first]
+    # end
+    # 
+    # def find_command_possibilities(cmd_name)
+    #   len = cmd_name.length
+    #   self.command_names.select { |n| cmd_name == n[0,len] }
+    # end
+    # 
+    # private
+    # 
+    # def load_and_instantiate(command_name)
+    #   command_name = command_name.to_s
+    #   retried = false
+    # 
+    #   begin
+    #     const_name = command_name.capitalize.gsub(/_(.)/) { $1.upcase }
+    #     Gem::Commands.const_get("#{const_name}Command").new
+    #   rescue NameError
+    #     if retried then
+    #       raise
+    #     else
+    #       retried = true
+    #       require "rubygems/commands/#{command_name}_command"
+    #       retry
+    #     end
+    #   end
+    # end
+    # # END
+    # #####
+    
+    # #####
+    # # From script/plugin
+    # def parse!(args=ARGV)
+    #   general, sub = split_args(args)
+    #   options.parse!(general)
+    # 
+    #   command = general.shift
+    #   if command =~ /^(list|discover|install|source|unsource|sources|remove|update|info)$/
+    #     command = Commands.const_get(command.capitalize).new(self)
+    #     command.parse!(sub)
+    #   else
+    #     puts "Unknown command: #{command}"
+    #     puts options
+    #     exit 1
+    #   end
+    # end
+    # 
+    # def split_args(args)
+    #   left = []
+    #   left << args.shift while args[0] and args[0] =~ /^-/
+    #   left << args.shift if args[0]
+    #   return [left, args]
+    # end
+    # 
+    # def self.parse!(args=ARGV)
+    #   Plugin.new.parse!(args)
+    # end
+    # # END
+    # #####
     
     def banner
       return @banner if @banner

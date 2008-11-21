@@ -1,22 +1,23 @@
 * complete cli processing
 * establish commands
-  * init /path/to/workspace
-  * list (versions)
-  * list ruby
-  * list rubygems
-  * config.source.ruby add
-  * config.source.ruby remove
-  * config.source.ruby default
-  * config.source.rubygems add
-  * config.source.rubygems remove
-  * config.source.rubygems default
-  * config default.install rubygems
-  * config default.ruby
-  * config default.rubygems
+  * init
+    * init /path/to/workspace
+  * list?
+    * list ruby
+    * list rubygems
+  * config
+    * config source.ruby add
+    * config source.ruby remove
+    * config source.ruby default
+    * config source.rubygems add
+    * config source.rubygems remove
+    * config source.rubygems default
+    * config default.install rubygems
+    * config default.ruby
+    * config default.rubygems
   * cache
-  * cache directory
-  * cache purge
-  * cache list
+    * cache purge
+    * cache list
 * setup global config
   * ruby version and location
   * rubygems version and location
@@ -80,7 +81,9 @@
         $WORKSPACE/lib/rubyinstall/bin/gem --config-file $WORKSPACE/etc/gemrc $*
     * IF installed both ruby and rubygems
     * ELSE installed only rubygems
+        export _ORIGINAL_HOME=$HOME
         export WORKSPACE=/path/to/new/workspace
+        export HOME=$WORKSPACE
         export _OLD_GEM_HOME=$GEM_HOME
         export _OLD_GEM_PATH=$GEM_PATH
         export _OLD_RUBYLIB=$RUBYLIB
