@@ -42,14 +42,8 @@ describe Workspace::CLI do
     before( :each ) do
       @cli = Workspace::CLI.new
     end
-
-    def processor( *args )
-      lambda { @cli.parse_options!( args ) }
-    end
-
-    def process( *args )
-      processor( *args ).call
-    end
+    def processor( *args ); lambda { @cli.parse_options!( args ) }; end
+    def process( *args ); processor( *args ).call; end
     
     describe "using NO arguments" do
       
@@ -95,7 +89,7 @@ describe Workspace::CLI do
           cmd = mock( 'DummyCommand' )
           cmd.expects( :process_options! ).with( ['-z'] )
           @cli.expects( :find_command ).with( 'dummy' ).returns( cmd )
-          @cli.expects( :commands ).returns( ['dummy'] )
+          # @cli.expects( :commands ).returns( ['dummy'] )
 
           process( arg, 'dummy', '-z' )
           @cli.options[ :debug ].should be_true
@@ -126,7 +120,7 @@ describe Workspace::CLI do
         cmd = mock( 'HelpCommand' )
         cmd.expects( :process_options! ).with( [] )
         @cli.expects( :find_command ).with( 'help' ).returns( cmd )
-        @cli.expects( :commands ).returns( ['help'] )
+        # @cli.expects( :commands ).returns( ['help'] )
 
         process( 'help' ) 
       end
@@ -135,7 +129,7 @@ describe Workspace::CLI do
         cmd = mock( 'HelpCommand' )
         cmd.expects( :process_options! ).with( ['dummy'] )
         @cli.expects( :find_command ).with( 'help' ).returns( cmd )
-        @cli.expects( :commands ).returns( ['help'] )
+        # @cli.expects( :commands ).returns( ['help'] )
 
         process( 'help', 'dummy' )
       end
@@ -144,16 +138,16 @@ describe Workspace::CLI do
         cmd = mock( 'DummyCommand' )
         cmd.expects( :process_options! ).with( [] )
         @cli.expects( :find_command ).with( 'dummy' ).returns( cmd )
-        @cli.expects( :commands ).returns( ['dummy'] )
+        # @cli.expects( :commands ).returns( ['dummy'] )
 
         process( 'dummy' )
       end
       
-      it "should leftover arguments to dummy command for arguments 'dummy -z'" do
+      it "should pass leftover arguments to dummy command for arguments 'dummy -z'" do
         cmd = mock( 'DummyCommand' )
         cmd.expects( :process_options! ).with( ['-z'] )
         @cli.expects( :find_command ).with( 'dummy' ).returns( cmd )
-        @cli.expects( :commands ).returns( ['dummy'] )
+        # @cli.expects( :commands ).returns( ['dummy'] )
 
         process( 'dummy', '-z' )
       end
@@ -163,23 +157,110 @@ describe Workspace::CLI do
     describe "using INVALID arguments" do
 
       it "should use help command for invalid switch '-x'" do
+        err = Workspace::CLI::UnknownSwitch.new( '-x' )
         cmd = mock( 'HelpCommand' )
-        cmd.expects( :process_options! ).with( ['unknown_switch','-x'] )
-        @cli.expects( :find_command ).with( 'help' ).returns( cmd )
+        cmd.expects( :process_options! ).with( [err] )
+        @cli.expects( :raise ).raises( err )
+        @cli.expects( :get_command ).with( 'help' ).returns( cmd )
 
         process( '-x' )
       end
 
       it "should use help command for invalid argument 'chunkybacon'" do
+        err = Workspace::CLI::UnknownCommand.new( 'chunkybacon' )
         cmd = mock( 'HelpCommand' )
-        cmd.expects( :process_options! ).with( ['unknown_command', 'chunkybacon'] )
-        @cli.expects( :find_command ).with( 'help' ).returns( cmd )
-        @cli.expects( :commands ).returns( ['help'] )
+        cmd.expects( :process_options! ).with( [err] )
+        @cli.expects( :find_command ).with( 'chunkybacon' ).raises( err )
+        @cli.expects( :get_command ).with( 'help' ).returns( cmd )
 
         process( 'chunkybacon' ) 
       end
 
     end
+    
+  end
+  
+  describe "instance calling find_command" do
+    
+    before( :each ) do
+      @cli = Workspace::CLI.new
+      @cmds = { 'help' => mock( 'HelpCommand' ), 'known' => mock( 'KnownCommand' ) }
+    end
+    def processor( cmd_name ); lambda { @cli.find_command( cmd_name ) }; end
+    def process( cmd_name ); processor( cmd_name ).call; end
+    
+    it "should find a valid command" do
+      known = mock( 'KnownCommand' )
+      mgr = mock( 'CommandManager' )
+      mgr.expects( :find_command_matches ).with( 'known' ).returns( ['known'] )
+      @cli.expects( :command_manager ).returns( mgr )
+      @cli.expects( :get_command ).with( 'known' ).returns( known )
+      
+      process( 'known' ).should == known
+    end
+    
+    it "should find a valid command for partial match on argument" do
+      known = mock( 'KnownCommand' )
+      mgr = mock( 'CommandManager' )
+      mgr.expects( :find_command_matches ).with( 'kno' ).returns( ['known'] )
+      @cli.expects( :command_manager ).returns( mgr )
+      @cli.expects( :get_command ).with( 'known' ).returns( known )
+      
+      process( 'kno' ).should == known
+    end
+    
+    it "should raise UnknownCommand for a non-existant command" do
+      mgr = mock( 'CommandManager' )
+      mgr.expects( :find_command_matches ).returns( [] )
+      @cli.expects( :command_manager ).returns( mgr )
+    
+      processor( 'chunkybacon' ).should raise_error( Workspace::CLI::UnknownCommand )
+    end
+    
+    it "should raise AmbiguousCommand for multiple matching commands" do
+      mgr = mock( 'CommandManager' )
+      mgr.expects( :find_command_matches ).with( 'chunky' ).returns( ['chunkybacon','chunkycheese'] )
+      @cli.expects( :command_manager ).returns( mgr )
+      
+      processor( 'chunky' ).should raise_error( Workspace::CLI::AmbiguousCommand )
+    end
+    
+  end
+  
+  describe "instance calling get_command" do
+    
+    before( :each ) do
+      @cli = Workspace::CLI.new
+    end
+    def processor( cmd_name ); lambda { @cli.get_command( cmd_name ) }; end
+    def process( cmd_name ); processor( cmd_name ).call; end
+    
+    it "should ask command_manager and get matching command" do
+      known = mock( 'KnownCommand' )
+      mgr = mock( 'CommandManager' )
+      mgr.expects( :[] ).with( 'known' ).returns( known )
+      @cli.expects( :command_manager ).returns( mgr )
+      
+      process( 'known' ).should == known
+    end
+    
+    it "should ask command_manager and not unknown command" do
+      mgr = mock( 'CommandManager' )
+      mgr.expects( :[] ).with( 'unknown' ).returns( nil )
+      @cli.expects( :command_manager ).returns( mgr )
+      
+      process( 'unknown' ).should be_nil
+    end
+    
+  end
+  
+  describe "instance calling command_manager" do
+    
+    before( :each ) do
+      @cli = Workspace::CLI.new
+    end
+    def processor( cmd_name ); lambda { @cli.command_manager }; end
+    def process( cmd_name ); processor( cmd_name ).call; end
     
   end
   
