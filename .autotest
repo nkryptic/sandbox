@@ -1,0 +1,6 @@
+Autotest.add_hook :initialize do |at|
+  # Ignore the ._* files TextMate likes to leave about.
+  
+  at.add_exception(/\/\._[^\/]*$/)
+  %w{ .git .svn Rakefile Capfile README spec/spec.opts spec/rcov.opts autotest svn-commit .DS_Store }.each { |exception| at.add_exception( exception ) }
+end

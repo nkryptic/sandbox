@@ -1,17 +1,19 @@
-begin
-  require 'spec'
-rescue LoadError
-  require 'rubygems'
-  # gem 'rspec'
-  require 'spec'
-end
+# begin
+#   require 'spec'
+# rescue LoadError
+#   require 'rubygems'
+#   # gem 'rspec'
+#   require 'spec'
+# end
+# 
+# $:.unshift( File.dirname( __FILE__ ) + '/../lib' )
 
 $:.unshift( File.dirname( __FILE__ ) + '/../lib' )
-require 'stringio'
-
 require 'rubygems'
 require 'mocha'
-
+require 'spec'
+require 'stringio'
+require 'ostruct'
 require 'workspace'
 
 Spec::Runner.configure do |config|
@@ -24,26 +26,43 @@ Spec::Runner.configure do |config|
   # config.mock_with :flexmock
   # config.mock_with :rr
   
-  def capture(*streams)
-    results = []
-    streams.collect! do |stream|
-      stream = stream.to_s
-    end
+  # def capture(*streams)
+  #   results = []
+  #   streams.collect! do |stream|
+  #     stream = stream.to_s
+  #   end
+  #   begin
+  #     streams.each do |stream|
+  #       eval "$#{stream} = StringIO.new"
+  #     end
+  #     yield
+  #     streams.each do |stream|
+  #       results << eval("$#{stream}").string
+  #     end
+  #   ensure
+  #     streams.each do |stream|
+  #       eval("$#{stream} = #{stream.upcase}")
+  #     end
+  #   end
+  #  
+  #   return *results
+  # end
+  
+  def capture
+    results = OpenStruct.new
+    
     begin
-      streams.each do |stream|
-        eval "$#{stream} = StringIO.new"
-      end
+      $stdout = StringIO.new
+      $stderr = StringIO.new
       yield
-      streams.each do |stream|
-        results << eval("$#{stream}").string
-      end
+      results.stdout = $stdout.string
+      results.stderr = $stderr.string
     ensure
-      streams.each do |stream|
-        eval("$#{stream} = #{stream.upcase}")
-      end
+      $stdout = STDOUT
+      $stderr = STDERR
     end
  
-    return *results
+    return results
   end
   
   alias silence capture

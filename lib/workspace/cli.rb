@@ -2,35 +2,35 @@ require 'optparse'
 require 'workspace'
 
 module Workspace
-  class CommandManager
-    # include Singleton
-    class << self
-      attr_reader :commands
-      
-      # def initialize
-      #   @commands = {}
-      # end
-      
-      def register( name, klass )
-        @commands ||= {}
-        @command[ name ] = klass
-      end
-      
-      # def actions
-      #   return @action_names if @action_names
-      #   @action_names = @commands.keys
-      #   @action_names.sort
-      # end
-  end
-  end
+  # class CommandManager
+  #   # include Singleton
+  #   class << self
+  #     attr_reader :commands
+  #     
+  #     # def initialize
+  #     #   @commands = {}
+  #     # end
+  #     
+  #     def register( name, klass )
+  #       @commands ||= {}
+  #       @command[ name ] = klass
+  #     end
+  #     
+  #     # def actions
+  #     #   return @action_names if @action_names
+  #     #   @action_names = @commands.keys
+  #     #   @action_names.sort
+  #     # end
+  #   end
+  # end
   
-  class Command
-    def self.inherited( klass )
-      parts = klass.to_s.split( '::' )
-      name = parts.last.downcase
-      CommandManager.instance.register( name, klass )
-    end
-  end
+  # class Command
+  #   def self.inherited( klass )
+  #     parts = klass.to_s.split( '::' )
+  #     name = parts.last.downcase
+  #     CommandManager.instance.register( name, klass )
+  #   end
+  # end
   
   class CLI
     class << self
@@ -53,6 +53,9 @@ module Workspace
       end
     end
     
+    attr_reader :command, :options
+    # attr_reader :debug
+    
     # def initialize( out_stream = STDOUT, error_stream = STDERR )
     def initialize
       # @out_stream = out_stream
@@ -72,11 +75,8 @@ module Workspace
       @options = {
         :debug => false
       }
-      @command_manager = Workspace::CommandManager # .instance
+      # @command_manager = Workspace::CommandManager # .instance
     end
-    
-    attr_reader :command, :options
-    attr_reader :debug
     
     # def parser #:nodoc:
     #   @parser ||= OptionParser.new do |opts|
@@ -190,29 +190,39 @@ module Workspace
     # end
     # #################
     # # older parse
-    def parse_options!( args )
-      # split application options, command, and command options      
+    def parse_options!( args )   
       command_name = nil
       command_options = []
-      arg = args.shift
-      case arg
-      when '-h', '--help', nil
-        command_name = 'help'
-      when '-v', '--version'
-        puts "workspace v#{ Workspace::Version::STRING }"
-        exit
-      when /^-/
-        command_name = 'help'
-        command_options << 'badoption' << args.shift
-      else
-        command_name = find_command( arg.to_s.downcase )
-        if command_name
-          command_options = args
+      # arg = args.shift
+      
+      while command_name.nil? do
+        case arg = args.shift
+          when '-h', '--help', nil
+            command_name = 'help'
+          when '-v', '--version'
+            puts "workspace v#{ Workspace::Version::STRING }"
+            exit
+          when '-d', '--debug'
+            @options[ :debug ] = true
+          when /^-/
+            command_name = 'help'
+            command_options << 'unknown_switch' << arg
         else
-          command_options << arg.to_s.downcase
-          command_name = 'help'
+          command_name = arg.to_s.downcase
+          if commands.include?( command_name )
+            command_options = args
+          else
+            command_options << 'unknown_command' << arg.to_s.downcase
+            command_name = 'help'
+          end
+        end
       end
       
+      @command = find_command( command_name )
+      
+      if @command
+        @command.process_options!( command_options )
+      end
       # if Workspace::CommandManager.has( command_name )
       # end
       # 
