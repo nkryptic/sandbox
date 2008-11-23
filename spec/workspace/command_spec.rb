@@ -1,49 +1,66 @@
+
 require File.dirname( __FILE__ ) + '/../spec_helper'
 require 'workspace/command'
 
 
-describe Workspace::Command, 'instance' do
-  # # after( :each ) do
-  # #   Object.instance_eval{ remove_const :X } if Object.instance_eval{ const_defined? :NewCommand }
-  # # end
-  # # 
-  # # it "should call register when subclassed" do
-  # #   Workspace::Command.expects(:register)
-  # #   class NewCommand < Workspace::Command
-  # #   end
-  # # end
-  # 
-  # it "should require argument on creation" do
-  #   lambda { Workspace::Command.new }.should raise_error( ArgumentError )
-  # end
-  # 
-  # it "should respond to parse_options!" do
-  #   @cmd = Workspace::Command.new( 'test' )
-  #   @cmd.should respond_to( :parse_options! )
-  # end
-  # 
-  # 
-  # # before( :each ) do
-  # #   @command = Workspace::Command.new
-  # # end
-  # # 
-  # # describe "with valid arguments" do
-  # #   it "should print the version for option '--version'" do
-  # #     stdout,stderr = capture(:stdout,:stderr) do
-  # #       # lambda { Workspace::CLI.execute( ['--version'] ) }.
-  # #       lambda { @cli.parse_options!( ['--version'] ) }.
-  # #           should raise_error( SystemExit ) { |error| error.status.should == 0 }
-  # #     end
-  # #     stdout.chomp.should == "workspace v#{Workspace::Version::STRING}"
-  # #   end
-  # #   
-  # #   it "should ignore additional arguments after '-v' [test]" do
-  # #     @cli.expects(:puts).with( "workspace v#{Workspace::Version::STRING}" )
-  # #     lambda { @cli.parse_options!( ['-v', '-h'] ) }.
-  # #         should raise_error( SystemExit ) { |error| error.status.should == 0 }
-  # #   end
-  # # end
+describe Workspace::Command do
+  
+  it "should require a name when calling 'new'" do
+    lambda { Workspace::Command.new }.
+        should raise_error( ArgumentError ) { |error| error.message.should =~ /0 for 1/ }
+  end
+  
 end
 
-# describe Workspace::Command, "somemethod" do
-# end
+describe Workspace::Command, 'instance' do
+  
+  before( :each ) do
+    @cmd = Workspace::Command.new( 'dummy' )
+  end
+  
+  it "should require array of arguements for process_options!" do
+    lambda { @cmd.process_options! }.
+        should raise_error( ArgumentError ) { |error| error.message.should =~ /0 for 1/ }
+    lambda { @cmd.process_options!( [] ) }.should_not raise_error( ArgumentError )
+  end
+  
+  it "should accept global options for process_options!" do
+    lambda { @cmd.process_options!( [], { :something => true } ) }.should_not raise_error( ArgumentError )
+  end
+  
+  it "should raise NotImplementedError on execute!" do
+    lambda { @cmd.execute! }.
+        should raise_error( NotImplementedError ) { |error| error.message.should =~ /is not implemented/ }
+  end
+  
+  it "should have a description"
+  it "should have a summary"
+  it "should have a usage"
+  it "should have a description"
+  it "should have a parser"
+  
+  describe "calling process_options!" do
+    
+    describe "with valid arguments" do
+      
+      it "should merge global options"
+      
+      it "should call show_help for option '-h'" do
+        pending( "code not written yet" )
+        @cmd.expects( :show_help )
+        # io = capture() do
+          lambda { @cmd.process_options!( ['-h'] ) }.
+              should raise_error( SystemExit ) { |error| error.status.should == 0 }
+        # end
+        # io.stdout.chomp.should == "Usage"
+      end
+      
+      # it "should description" do
+      #   pending( "Needs to be written" )
+      # end
+      
+    end
+    
+  end
+  
+end

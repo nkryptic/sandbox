@@ -1,3 +1,4 @@
+
 require File.dirname( __FILE__ ) + '/../spec_helper'
 require 'workspace/cli'
 
@@ -37,6 +38,16 @@ describe Workspace::CLI do
     
   end
   
+  describe "creating an instance" do
+    
+    it "should load a new CommandManager" do
+      Workspace::CommandManager.expects( :new )
+      
+      Workspace::CLI.new
+    end
+    
+  end
+  
   describe "instance calling parse_options!" do
     
     before( :each ) do
@@ -49,7 +60,7 @@ describe Workspace::CLI do
       
       it "should use help command" do
         cmd = mock( 'HelpCommand' )
-        cmd.expects( :process_options! ).with( [] )
+        cmd.expects( :process_options! ).with( [], { :debug => false } )
         @cli.expects( :find_command ).with( 'help' ).returns( cmd )
 
         process()
@@ -80,26 +91,30 @@ describe Workspace::CLI do
           @cli.expects( :find_command )
           
           process( arg )
-          @cli.options[ :debug ].should be_true
+          Workspace::CLI.publicize_methods do
+            @cli.options[ :debug ].should be_true
+          end
         end
       end
 
       [ '-d', '--debug' ].each do |arg|
         it "should not ignore additional arguments after '#{arg}'" do
           cmd = mock( 'DummyCommand' )
-          cmd.expects( :process_options! ).with( ['-z'] )
+          cmd.expects( :process_options! ).with( ['-z'], { :debug => true } )
           @cli.expects( :find_command ).with( 'dummy' ).returns( cmd )
           # @cli.expects( :commands ).returns( ['dummy'] )
 
           process( arg, 'dummy', '-z' )
-          @cli.options[ :debug ].should be_true
+          Workspace::CLI.publicize_methods do
+            @cli.options[ :debug ].should be_true
+          end
         end
       end
 
       [ '-h', '--help', nil ].each do |arg|
         it "should use help command for switch '#{arg}'" do
           cmd = mock( 'HelpCommand' )
-          cmd.expects( :process_options! ).with( [] )
+          cmd.expects( :process_options! ).with( [], { :debug => false } )
           @cli.expects( :find_command ).with( 'help' ).returns( cmd )
 
           process( arg ) 
@@ -109,7 +124,7 @@ describe Workspace::CLI do
       [ '-h', '--help' ].each do |arg|
         it "should ignore additional arguments after '#{arg}'" do
           cmd = mock( 'HelpCommand' )
-          cmd.expects( :process_options! ).with( [] )
+          cmd.expects( :process_options! ).with( [], { :debug => false } )
           @cli.expects( :find_command ).with( 'help' ).returns( cmd )
 
           process( arg, '-x' )
@@ -118,7 +133,7 @@ describe Workspace::CLI do
 
       it "should use help command for argument 'help'" do
         cmd = mock( 'HelpCommand' )
-        cmd.expects( :process_options! ).with( [] )
+        cmd.expects( :process_options! ).with( [], { :debug => false } )
         @cli.expects( :find_command ).with( 'help' ).returns( cmd )
         # @cli.expects( :commands ).returns( ['help'] )
 
@@ -127,7 +142,7 @@ describe Workspace::CLI do
 
       it "should use help command for arguments 'help dummy'" do
         cmd = mock( 'HelpCommand' )
-        cmd.expects( :process_options! ).with( ['dummy'] )
+        cmd.expects( :process_options! ).with( ['dummy'], { :debug => false } )
         @cli.expects( :find_command ).with( 'help' ).returns( cmd )
         # @cli.expects( :commands ).returns( ['help'] )
 
@@ -136,7 +151,7 @@ describe Workspace::CLI do
 
       it "should use dummy command for argument 'dummy'" do
         cmd = mock( 'DummyCommand' )
-        cmd.expects( :process_options! ).with( [] )
+        cmd.expects( :process_options! ).with( [], { :debug => false } )
         @cli.expects( :find_command ).with( 'dummy' ).returns( cmd )
         # @cli.expects( :commands ).returns( ['dummy'] )
 
@@ -145,7 +160,7 @@ describe Workspace::CLI do
       
       it "should pass leftover arguments to dummy command for arguments 'dummy -z'" do
         cmd = mock( 'DummyCommand' )
-        cmd.expects( :process_options! ).with( ['-z'] )
+        cmd.expects( :process_options! ).with( ['-z'], { :debug => false } )
         @cli.expects( :find_command ).with( 'dummy' ).returns( cmd )
         # @cli.expects( :commands ).returns( ['dummy'] )
 
@@ -159,7 +174,7 @@ describe Workspace::CLI do
       it "should use help command for invalid switch '-x'" do
         err = Workspace::CLI::UnknownSwitch.new( '-x' )
         cmd = mock( 'HelpCommand' )
-        cmd.expects( :process_options! ).with( [err] )
+        cmd.expects( :process_options! ).with( [err], { :debug => false } )
         @cli.expects( :raise ).raises( err )
         @cli.expects( :get_command ).with( 'help' ).returns( cmd )
 
@@ -169,7 +184,7 @@ describe Workspace::CLI do
       it "should use help command for invalid argument 'chunkybacon'" do
         err = Workspace::CLI::UnknownCommand.new( 'chunkybacon' )
         cmd = mock( 'HelpCommand' )
-        cmd.expects( :process_options! ).with( [err] )
+        cmd.expects( :process_options! ).with( [err], { :debug => false } )
         @cli.expects( :find_command ).with( 'chunkybacon' ).raises( err )
         @cli.expects( :get_command ).with( 'help' ).returns( cmd )
 
@@ -257,10 +272,18 @@ describe Workspace::CLI do
   describe "instance calling command_manager" do
     
     before( :each ) do
+      @mgr = mock( 'CommandManager' )
+      Workspace::CommandManager.stubs( :new ).once.then.returns( @mgr )
       @cli = Workspace::CLI.new
     end
-    def processor( cmd_name ); lambda { @cli.command_manager }; end
-    def process( cmd_name ); processor( cmd_name ).call; end
+    
+    it "should ask command manager for 'help' command" do
+      cmd = mock()
+      @mgr.expects( :find_command_matches ).with( 'help' ).returns( ['help'] )
+      @mgr.expects( :[] ).with( 'help' )
+      
+      @cli.parse_options!( ['-h'] )
+    end
     
   end
   

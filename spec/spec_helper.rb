@@ -18,35 +18,11 @@ require 'workspace'
 
 Spec::Runner.configure do |config|
   # == Mock Framework
-  #
   # RSpec uses it's own mocking framework by default. If you prefer to
   # use mocha, flexmock or RR, uncomment the appropriate line:
-  #
   config.mock_with :mocha
   # config.mock_with :flexmock
   # config.mock_with :rr
-  
-  # def capture(*streams)
-  #   results = []
-  #   streams.collect! do |stream|
-  #     stream = stream.to_s
-  #   end
-  #   begin
-  #     streams.each do |stream|
-  #       eval "$#{stream} = StringIO.new"
-  #     end
-  #     yield
-  #     streams.each do |stream|
-  #       results << eval("$#{stream}").string
-  #     end
-  #   ensure
-  #     streams.each do |stream|
-  #       eval("$#{stream} = #{stream.upcase}")
-  #     end
-  #   end
-  #  
-  #   return *results
-  # end
   
   def capture
     results = OpenStruct.new
@@ -68,3 +44,16 @@ Spec::Runner.configure do |config|
   alias silence capture
   
 end
+
+class Class
+  def publicize_methods
+    saved_private_instance_methods = self.private_instance_methods
+    begin
+      self.class_eval { public *saved_private_instance_methods }
+      yield
+    ensure
+      self.class_eval { private *saved_private_instance_methods }
+    end
+  end
+end
+
