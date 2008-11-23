@@ -5,17 +5,23 @@ require 'lib/workspace' unless defined? Workspace
  
 begin
   require 'echoe'
-  Echoe.new( 'workspace', Workspace::Version::STRING ) do |p|
-    # p.rubyforge_name  = 'nkryptic'
-    # p.summary         = "Create virtual ruby/rubygems workspaces."
-    p.description     = "Create virtual ruby/rubygems workspaces."
-    p.url             = "http://github.com/nkryptic/workspace"
-    p.author          = "Jacob Radford"
-    p.email           = "nkryptic@gmail.com"
-    p.ignore_pattern  = [ "tmp/*", "script/*" ]
-    p.development_dependencies = []
+  
+  Echoe.new( 'workspace', Workspace::Version::STRING ) do |p|  
+    # p.rubyforge_name            = 'nkryptic'
+    # p.summary                   = "Create virtual ruby/rubygems workspaces."
+    p.description               = "Create virtual ruby/rubygems workspaces."
+    p.url                       = "http://github.com/nkryptic/workspace"
+    p.author                    = "Jacob Radford"
+    p.email                     = "nkryptic@gmail.com"
+    p.ignore_pattern            = [ "tmp/*", "script/*" ]
+    p.development_dependencies  = [
+                                    'echoe ~> 3.0',
+                                    'rspec ~> 1.1.0',
+                                    'mocha ~> 0.9',
+                                  ]
     # p.dependencies = ['ParseTree >=2.1.1', 'ruby2ruby >=1.1.8']
-  end 
+  end
+  
 rescue LoadError => boom
   puts "You are missing a dependency required for meta-operations on this gem."
   puts "#{boom.to_s.capitalize}."
