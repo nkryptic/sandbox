@@ -234,7 +234,59 @@
   
   
 = inspiration
+
+based on codeforpeople's rubyforge:
+require 'enumerator'
+require 'fileutils'
+require 'yaml'
+require 'open-uri'
+
+require 'pp'
+
+# File lib/rubyforge.rb, line 106
+def scrape_project(project, criteria={})
+  max = criteria[ 'max' ] ? criteria[ 'max' ] : nil
+  min = criteria[ 'min' ] ? criteria[ 'min' ] : nil
+  data = {
+    project => Hash.new { |h,k| h[k] = {} },
+  }
+  html = URI.parse("http://rubyforge.org/projects/#{project}/index.html").read
+  group_id = html[/(frs|tracker|mail)\/\?group_id=\d+/][/\d+/].to_i
+  html = URI.parse("http://rubyforge.org/frs/?group_id=#{group_id}").read
   
+  html.scan(/download.php[^"]+">[^<]+/).each do |s|
+    next unless s =~ /(tar|gz|bz2|tgz|zip)$/
+    if s =~ /download.php\/(\d+)\/(#{project}[^"]+)">([^<]+)/
+      version = $3
+      file = $2
+      stamp = $1
+      dl = "#{stamp}/#{file}"
+      parts = version.split('.')
+      parts.pop while [ 'tar','gz','bz2','tgz','zip' ].include? parts.last
+      name = parts.join('.')
+      if name =~ /^#{project}-(\d+)\.(\d+)\.(\d+)/
+        major, minor, tiny = $1, $2, $3
+        next if min and name < "#{project}-#{min}" 
+        next if max and name > "#{project}-#{max}"
+        # data[ project ][ name ] ||= Hash.new { |h,k| h[k] = {} }
+        # data[ project ][ name ][ version ] = "http://rubyforge.org/frs/download.php/#{dl}"
+        data[ project ][ "#{major}.#{minor}.#{tiny}" ] ||= Hash.new { |h,k| h[k] = {} }
+        data[ project ][ "#{major}.#{minor}.#{tiny}" ][ stamp ] ||= Hash.new { |h,k| h[k] = {} }
+        data[ project ][ "#{major}.#{minor}.#{tiny}" ][ stamp ][ name ] ||= Hash.new { |h,k| h[k] = {} }
+        data[ project ][ "#{major}.#{minor}.#{tiny}" ][ stamp ][ name ][ version ] = "http://rubyforge.org/frs/download.php/#{dl}"
+      end
+    end
+  end
+  
+  data[ project ].keys.sort.each do |key|
+    out = { key => data[project][key].keys.sort }
+    pp out
+  end
+  data
+end
+
+
+
    _     _            _    _                          
   | |   | |          | |  | |                         
   | |__ | | ___  __ _| | __ |__   ___  _   _ ___  ___ 

@@ -10,6 +10,10 @@ module Workspace
       
       # invokes workspace via command-line ARGV as the options
       def execute( args = ARGV )
+        if ENV[ 'WORKSPACE' ]
+          puts "Error: You cannot run workspace while in a loaded workspace."
+          exit( 1 )
+        end
         parse( args ).execute!
       end
       
@@ -30,9 +34,18 @@ module Workspace
     # setup of a new CLI instance and create CommandManager
     def initialize
       @options = {
-        :debug => false
+        :verbosity => :low
       }
+      @command = nil
+      @command_name = 'help'
+      @command_args = []
       @command_manager = Workspace::CommandManager.new
+    end
+    
+    
+    #
+    def execute!
+      command_manager[ @command_name ].run( @command_args, @options )
     end
     
     # processes +args+ to:
@@ -41,44 +54,47 @@ module Workspace
     # * determine command name to lookup in CommandManager
     # * load command and have it process any add't options
     # * catches exceptions for unknown switches or commands
-    def parse_options!( args )   
-      command_name = nil
-      command_options = []
-      
+    def parse_options!( args )
       begin
-        while command_name.nil? do
-          case arg = args.shift
-            when '-h', '--help', nil
-              command_name = 'help'
-            when '-v', '--version'
-              puts "workspace v#{ Workspace::Version::STRING }"
-              exit
-            when '-d', '--debug'
-              @options[ :debug ] = true
-            when /^-/
-              raise UnknownSwitch.new( arg )
+        while args.first do
+          if args.first =~ /^-/
+            process_switch!( args.shift, args )
           else
-            command_name = arg.to_s.downcase
-            command_options = args
+            @command_name = args.shift.to_s.downcase
+            @command_args = args.slice!(0..-1)
+            break
           end
         end
-        
-        @command = find_command( command_name )
-        
+        @command_name = find_command( @command_name )
       rescue UnknownSwitch, UnknownCommand, AmbiguousCommand => e
-        @command = get_command( 'help' )
-        command_options = [ e ]
+        @command_name = 'help'
+        # @command = get_command( @command_name )
+        @command_args = [ e ]
       end
       
-      if @command
-        @command.process_options!( command_options, @options )
+      # @command.process_options!( @command_args, @options )
+    end
+    
+    def process_switch!( arg, args )
+      case arg
+        when '-h', '--help'
+          args.clear
+        when '-V', '--version'
+          puts "workspace v#{ Workspace::Version::STRING }"
+          exit
+        when '-v', '--verbose'
+          @options[ :verbosity ] = :high
+        when '-q', '--quiet'
+          @options[ :verbosity ] = false
+      else
+        raise UnknownSwitch.new( arg )
       end
     end
     
     # retrieves the command from CommandManager with name +cmd_name+
-    def get_command( cmd_name )
-      command_manager[ cmd_name ]
-    end
+    # def get_command( cmd_name )
+    #   command_manager[ cmd_name ]
+    # end
     
     # returns the command instance which matches +cmd_name+
     # it performs partial matches to allow shortcuts
@@ -89,7 +105,8 @@ module Workspace
       raise UnknownCommand.new( cmd_name ) if matches.size < 1
       raise AmbiguousCommand.new( *matches ) if matches.size > 1
       
-      get_command( matches.first )
+      # get_command( matches.first )
+      matches.first
     end
     ## END PUBLIC INSTANCE METHODS
     
@@ -97,6 +114,8 @@ module Workspace
     ## PRIVATE INSTANCE METHODS
     private
       attr_reader :options, :command_manager
+      attr_reader :command_name, :command_args
+      
       # def command_manager
       #   @command_manager ||= Workspace::CommandManager.new
       # end
