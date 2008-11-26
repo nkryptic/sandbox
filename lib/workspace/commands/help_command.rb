@@ -13,6 +13,10 @@ class Workspace::Commands::HelpCommand < Workspace::Command
     def initialize
       super( 'help' )
     end
+    
+    def execute!
+      show_help
+    end
   ## END PUBLIC INSTANCE METHODS
   
   

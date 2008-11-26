@@ -22,7 +22,7 @@ module Workspace
       # if an error occurs, it will print out simple error message and exit 
       def parse( args )
         cli = new
-        cli.parse_options!( args )
+        cli.parse_args!( args )
         cli
       end
     end
@@ -33,9 +33,6 @@ module Workspace
     
     # setup of a new CLI instance and create CommandManager
     def initialize
-      @options = {
-        :verbosity => :low
-      }
       @command = nil
       @command_name = 'help'
       @command_args = []
@@ -43,9 +40,9 @@ module Workspace
     end
     
     
-    #
+    # get and run the command
     def execute!
-      command_manager[ @command_name ].run( @command_args, @options )
+      command_manager[ @command_name ].run( @command_args )
     end
     
     # processes +args+ to:
@@ -54,25 +51,19 @@ module Workspace
     # * determine command name to lookup in CommandManager
     # * load command and have it process any add't options
     # * catches exceptions for unknown switches or commands
-    def parse_options!( args )
+    def parse_args!( args )
       begin
-        while args.first do
-          if args.first =~ /^-/
-            process_switch!( args.shift, args )
-          else
-            @command_name = args.shift.to_s.downcase
-            @command_args = args.slice!(0..-1)
-            break
-          end
+        if args.first =~ /^-/
+          process_switch!( args.shift, args )
+        elsif args.first
+          @command_name = args.shift.to_s.downcase
+          @command_args = args.slice!(0..-1)
         end
         @command_name = find_command( @command_name )
-      rescue UnknownSwitch, UnknownCommand, AmbiguousCommand => e
+      rescue UnknownSwitch, UnknownCommand, AmbiguousCommand => ex
         @command_name = 'help'
-        # @command = get_command( @command_name )
-        @command_args = [ e ]
+        @command_args = [ ex ]
       end
-      
-      # @command.process_options!( @command_args, @options )
     end
     
     def process_switch!( arg, args )
@@ -82,19 +73,10 @@ module Workspace
         when '-V', '--version'
           puts "workspace v#{ Workspace::Version::STRING }"
           exit
-        when '-v', '--verbose'
-          @options[ :verbosity ] = :high
-        when '-q', '--quiet'
-          @options[ :verbosity ] = false
       else
         raise UnknownSwitch.new( arg )
       end
     end
-    
-    # retrieves the command from CommandManager with name +cmd_name+
-    # def get_command( cmd_name )
-    #   command_manager[ cmd_name ]
-    # end
     
     # returns the command instance which matches +cmd_name+
     # it performs partial matches to allow shortcuts
@@ -105,7 +87,6 @@ module Workspace
       raise UnknownCommand.new( cmd_name ) if matches.size < 1
       raise AmbiguousCommand.new( *matches ) if matches.size > 1
       
-      # get_command( matches.first )
       matches.first
     end
     ## END PUBLIC INSTANCE METHODS
@@ -113,8 +94,7 @@ module Workspace
     
     ## PRIVATE INSTANCE METHODS
     private
-      attr_reader :options, :command_manager
-      attr_reader :command_name, :command_args
+      attr_reader :command_manager, :command_name, :command_args
       
       # def command_manager
       #   @command_manager ||= Workspace::CommandManager.new

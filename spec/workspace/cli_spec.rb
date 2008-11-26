@@ -21,29 +21,25 @@ describe Workspace::CLI do
       end
     end
     
-    it "should attempt to parse ARGV" do
+    it "should attempt to parse ARGV by default" do
       Workspace::CLI.expects( :parse ).with( ARGV ).returns( @instance )
-      
       Workspace::CLI.execute
     end
     
     it "should create a new instance" do
       Workspace::CLI.expects( :new ).returns( @instance )
-      
       Workspace::CLI.execute
     end
     
-    it "should call parse_options! on the new instance" do
-      @instance.expects( :parse_options! )
+    it "should call parse_args! on the new instance" do
+      @instance.expects( :parse_args! )
       Workspace::CLI.expects( :new ).returns( @instance )
-      
       Workspace::CLI.execute
     end
     
     it "should run the instance" do
       @instance.expects( :execute! )
       Workspace::CLI.expects( :parse ).returns( @instance )
-      
       Workspace::CLI.execute
     end
     
@@ -53,25 +49,23 @@ describe Workspace::CLI do
     
     it "should load a new CommandManager" do
       Workspace::CommandManager.expects( :new )
-      
       Workspace::CLI.new
     end
     
   end
   
-  describe "instance calling parse_options!" do
+  describe "instance calling parse_args!" do
     
     before( :each ) do
       @cli = Workspace::CLI.new
     end
-    def processor( *args ); lambda { @cli.parse_options!( args ) }; end
+    def processor( *args ); lambda { @cli.parse_args!( args ) }; end
     def process( *args ); processor( *args ).call; end
     
     describe "using NO arguments" do
       
       it "should use help command" do
         @cli.expects( :find_command ).with( 'help' ).returns( 'help' )
-
         process()
         Workspace::CLI.publicize_methods do
           @cli.command_name.should == 'help'
@@ -86,62 +80,75 @@ describe Workspace::CLI do
       [ '-V', '--version' ].each do |arg|
         it "should print the version for switch '#{arg}'" do
           @cli.expects(:puts).with( "workspace v#{Workspace::Version::STRING}" )
-
           processor( arg ).should raise_error( SystemExit ) { |error| error.status.should == 0 }
         end
       end
 
       [ '-V', '--version' ].each do |arg|
         it "should ignore additional arguments after '#{arg}'" do
-          @cli.expects(:puts).with( "workspace v#{Workspace::Version::STRING}" )
-
+          @cli.stubs(:puts)
           processor( arg, '-x' ).should raise_error( SystemExit ) { |error| error.status.should == 0 }
+          processor( arg, 'unknown' ).should raise_error( SystemExit ) { |error| error.status.should == 0 }
         end
       end
       
-      [ [ [ '-v', '--verbose' ], :high ], [ [ '-q', '--quiet' ], false ] ].each do |args,level|
-        args.each do |arg|
-          it "should set instance's verbose option to #{level} for switch '#{arg}'" do
-            @cli.expects( :find_command )
-            
-            process( arg )
-            Workspace::CLI.publicize_methods do
-              @cli.options[ :verbosity ].should == level
-              @cli.command_args.should == []
-            end
-          end
-        end
-      end
+      # [ [ [ '-v', '--verbose' ], :high ], [ [ '-q', '--quiet' ], false ] ].each do |args,level|
+      #   args.each do |arg|
+      #     it "should set instance's verbose option to #{level} for switch '#{arg}'" do
+      #       @cli.expects( :find_command )
+      #       
+      #       process( arg )
+      #       Workspace::CLI.publicize_methods do
+      #         @cli.options[ :verbosity ].should == level
+      #         @cli.command_args.should == []
+      #       end
+      #     end
+      #   end
+      # end
       
-      [ [ [ '-v', '--verbose' ], :high ], [ [ '-q', '--quiet' ], false ] ].each do |args,level|
-        args.each do |arg|
-          it "should not ignore additional arguments after '#{arg}'" do
-            @cli.expects( :find_command ).with( 'dummy' ).returns( 'dummy' )
-          
-            process( arg, 'dummy', '-z' )
-            Workspace::CLI.publicize_methods do
-              @cli.options[ :verbosity ].should == level
-              @cli.command_name.should == 'dummy'
-              @cli.command_args.should == ['-z']
-            end
-          end
-        end
-      end
+      # [ [ [ '-v', '--verbose' ], :high ], [ [ '-q', '--quiet' ], false ] ].each do |args,level|
+      #   args.each do |arg|
+      #     it "should not ignore additional arguments after '#{arg}'" do
+      #       @cli.expects( :find_command ).with( 'dummy' ).returns( 'dummy' )
+      #     
+      #       process( arg, 'dummy', '-z' )
+      #       Workspace::CLI.publicize_methods do
+      #         @cli.options[ :verbosity ].should == level
+      #         @cli.command_name.should == 'dummy'
+      #         @cli.command_args.should == ['-z']
+      #       end
+      #     end
+      #   end
+      # end
 
       [ '-h', '--help', nil ].each do |arg|
         it "should use help command for switch '#{arg}'" do
           @cli.expects( :find_command ).with( 'help' ).returns( 'help' )
-
           process( arg ) 
+          Workspace::CLI.publicize_methods do
+            @cli.command_name.should == 'help'
+            @cli.command_args.should == []
+          end
         end
       end
 
       [ '-h', '--help' ].each do |arg|
-        it "should ignore additional arguments after '#{arg}'" do
+        it "should ignore additional switch after '#{arg}'" do
           @cli.expects( :find_command ).with( 'help' ).returns( 'help' )
-
           process( arg, '-x' )
           Workspace::CLI.publicize_methods do
+            @cli.command_name.should == 'help'
+            @cli.command_args.should == []
+          end
+        end
+      end
+      
+      [ '-h', '--help' ].each do |arg|
+        it "should ignore additional arguments after '#{arg}'" do
+          @cli.expects( :find_command ).with( 'help' ).returns( 'help' )
+          process( arg, 'unknown' )
+          Workspace::CLI.publicize_methods do
+            @cli.command_name.should == 'help'
             @cli.command_args.should == []
           end
         end
@@ -149,13 +156,11 @@ describe Workspace::CLI do
 
       it "should use help command for argument 'help'" do
         @cli.expects( :find_command ).with( 'help' ).returns( 'help' )
-
         process( 'help' ) 
       end
 
       it "should use help command for arguments 'help dummy'" do
         @cli.expects( :find_command ).with( 'help' ).returns( 'help' )
-
         process( 'help', 'dummy' )
         Workspace::CLI.publicize_methods do
           @cli.command_name.should == 'help'
@@ -165,13 +170,11 @@ describe Workspace::CLI do
 
       it "should use dummy command for argument 'dummy'" do
         @cli.expects( :find_command ).with( 'dummy' ).returns( 'dummy' )
-
         process( 'dummy' )
       end
       
       it "should pass leftover arguments to dummy command for arguments 'dummy -z'" do
         @cli.expects( :find_command ).with( 'dummy' ).returns( 'dummy' )
-
         process( 'dummy', '-z' )
         Workspace::CLI.publicize_methods do
           @cli.command_name.should == 'dummy'
@@ -186,7 +189,6 @@ describe Workspace::CLI do
       it "should use help command for invalid switch '-x'" do
         err = Workspace::CLI::UnknownSwitch.new( '-x' )
         @cli.expects( :raise ).raises( err )
-
         process( '-x' )
         Workspace::CLI.publicize_methods do
           @cli.command_name.should == 'help'
@@ -197,7 +199,6 @@ describe Workspace::CLI do
       it "should use help command for invalid argument 'chunkybacon'" do
         err = Workspace::CLI::UnknownCommand.new( 'chunkybacon' )
         @cli.expects( :find_command ).with( 'chunkybacon' ).raises( err )
-
         process( 'chunkybacon' ) 
         Workspace::CLI.publicize_methods do
           @cli.command_name.should == 'help'
@@ -222,7 +223,6 @@ describe Workspace::CLI do
       mgr = mock( 'CommandManager' )
       mgr.expects( :find_command_matches ).with( 'known' ).returns( ['known'] )
       @cli.expects( :command_manager ).returns( mgr )
-      
       process( 'known' ).should == 'known'
     end
     
@@ -230,7 +230,6 @@ describe Workspace::CLI do
       mgr = mock( 'CommandManager' )
       mgr.expects( :find_command_matches ).with( 'kno' ).returns( ['known'] )
       @cli.expects( :command_manager ).returns( mgr )
-      
       process( 'kno' ).should == 'known'
     end
     
@@ -238,7 +237,6 @@ describe Workspace::CLI do
       mgr = mock( 'CommandManager' )
       mgr.expects( :find_command_matches ).returns( [] )
       @cli.expects( :command_manager ).returns( mgr )
-    
       processor( 'chunkybacon' ).should raise_error( Workspace::CLI::UnknownCommand )
     end
     
@@ -246,7 +244,6 @@ describe Workspace::CLI do
       mgr = mock( 'CommandManager' )
       mgr.expects( :find_command_matches ).with( 'chunky' ).returns( ['chunkybacon','chunkycheese'] )
       @cli.expects( :command_manager ).returns( mgr )
-      
       processor( 'chunky' ).should raise_error( Workspace::CLI::AmbiguousCommand )
     end
     
@@ -262,8 +259,7 @@ describe Workspace::CLI do
     
     it "should ask command manager for 'help' command" do
       @mgr.expects( :find_command_matches ).with( 'help' ).returns( ['help'] )
-      
-      @cli.parse_options!( ['-h'] )
+      @cli.parse_args!( ['-h'] )
       Workspace::CLI.publicize_methods do
         @cli.command_name.should == 'help'
         @cli.command_args.should == []
@@ -282,7 +278,7 @@ describe Workspace::CLI do
     
     it "should ask command manager for 'help' command" do
       cmd = mock()
-      cmd.expects( :run ).with( [], has_entry( :verbosity => :low ) )
+      cmd.expects( :run ).with( [] )
       @mgr.expects( :[] ).with( 'help' ).returns( cmd )
       @cli.execute!
     end

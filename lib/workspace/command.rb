@@ -7,49 +7,134 @@ module Workspace
     
     ## CLASS METHODS
     class << self
+      def common_parser_opts
+        [
+          [ ["-h", '--help', 'Show help on this command'], Proc.new { |val,opts| opts[ :help ] = true } ],
+          [ ["-v", '--verbose', 'Show more output'], Proc.new { |val,opts| opts[ :verbosity ] ||= 0; opts[ :verbosity ] += 1 } ],
+          [ ["-q", '--quiet', 'Show less output'], Proc.new { |val,opts| opts[ :verbosity ] ||= 0; opts[ :verbosity ] -= 1 } ],
+        ]
+      end
     end
     ## END CLASS METHODS
     
-    # # The name of the command.
-    # attr_reader :command
-    # 
-    # # The options for the command.
-    # attr_reader :options
-    # 
-    # # The default options for the command.
-    # attr_accessor :defaults
-    # 
+    # The name of the command.
+    attr_reader :name
+    
+    # The options for the command.
+    attr_reader :options
+    
+    # The default options for the command.
+    attr_accessor :defaults
+    
     # # The name of the command for command-line invocation.
-    # attr_accessor :program_name
-    # 
-    # # A short description of the command.
-    # attr_accessor :summary
+    attr_accessor :cli_string
+     
+    # A short description of the command.
+    attr_accessor :summary
     
     ## PUBLIC INSTANCE METHODS
     def initialize( name, summary=nil, defaults={} )
-      # @name = name
-      # @summary = summary
-      # @program_name = "gem #{command}"
-      # @defaults = defaults
-      # @options = defaults.dup
+      @name = name
+      @summary = summary
+      @cli_string = "workspace #{name}"
+      @defaults = defaults
+      @options = defaults.dup
       # @option_groups = Hash.new { |h,k| h[k] = [] }
-      # @parser = nil
+      @parser = nil
     end
     
-    def run( args, globals_options={} )
-      # merge_globals( globals_options )
-      # process_options!( args )
-      # execute!
-    end
-    
-    def process_options!( args )
-      show_help
-      exit
+    def run( args )
+      process_options!( args )
+      if options[ :help ]
+        show_help
+      else
+        execute!
+      end
     end
     
     # Override to provide command handling.
     def execute!
-      raise NotImplementedError, "'execute!' is not implemented by #{self.class.name}"
+      raise NotImplementedError, "'execute!' must be implemented by #{self.class.name}"
+    end
+    
+    def process_options!( args )
+      begin
+        parser.parse!( args )
+      rescue OptionParser::ParseError => e
+        puts "Error: #{ e }"
+        puts "see '#{cli_string} --help'"
+        exit 1
+      end
+      options[ :args ] = args
+    end
+    
+    def description
+      nil
+    end
+    
+    def usage
+      cli_string
+    end
+    
+    def show_help
+      parser.program_name = usage
+      puts parser
+    end
+    
+    # # Merge a set of command options with the set of default options
+    # # (without modifying the default option hash).
+    # def merge_options(new_options)
+    #   @options = @defaults.clone
+    #   new_options.each do |k,v| @options[k] = v end
+    # end
+    
+    def configure_parser_options( opt_parser, option_list )
+      return if option_list.nil? or option_list.empty?
+      
+      # header = header.to_s.empty? ? '' : "#{header} "
+      # opt_parser.separator "  #{header}Options:"
+      
+      # process the given options array
+      option_list.each do |args, handler|
+        opt_parser.on( *args ) do |value|
+          handler.call( value, @options )
+        end
+      end
+      
+      opt_parser.separator ''
+    end
+    
+    def parser
+      @parser ||= OptionParser.new do |o|
+        # o.banner = "Usage: #{usage}"
+        o.separator ""
+        
+        o.separator "  Options:"
+        configure_parser_options( o, parser_opts )
+        
+        o.separator "  Common Options:"
+        configure_parser_options( o, Workspace::Command.common_parser_opts )
+        
+        # o.separator "  Arguments:"
+        # o.separator "    #{arguments}"
+        # o.separator ""
+        
+        o.separator "  Summary:"
+        o.separator "    #{summary}"
+        o.separator ""
+        
+        o.separator "  Description:"
+        o.separator "    #{description}"
+        o.separator ""
+        
+        # o.separator "  Defaults:"
+        # o.separator "    #{default_str}"
+        # o.separator ""
+      end
+    end
+    
+    def parser_opts
+      []
     end
     
     
@@ -277,7 +362,7 @@ module Workspace
     #     configure_options group_name, option_list
     #   end
     # 
-    #   configure_options "Common", Command.common_options
+    #   configure_options "Common", Command.common_parser_opts
     # 
     #   @parser.separator("")
     #   unless arguments.empty?
