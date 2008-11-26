@@ -11,7 +11,7 @@ class Workspace::Commands::InitCommand < Workspace::Command
   ## PUBLIC INSTANCE METHODS
   public
     def initialize
-      super( 'init' )
+      super( 'init', "Create a new workspace at the given path" )
     end
   ## END PUBLIC INSTANCE METHODS
   
