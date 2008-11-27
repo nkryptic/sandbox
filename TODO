@@ -1,7 +1,7 @@
 * complete cli processing
 * establish commands
   * init
-    * init /path/to/workspace
+    * init /path/to/sandbox
   * list?
     * list ruby
     * list rubygems
@@ -29,10 +29,10 @@
   * install type (rubygems only or both)
   * cache location
 * build procedures ( can I create entire structure in tmp and build, moving when done? )
-  * create workspace directory
-      /path/to/workspace/
-      /path/to/workspace/etc
-      /path/to/workspace/bin
+  * create sandbox directory
+      /path/to/sandbox/
+      /path/to/sandbox/etc
+      /path/to/sandbox/bin
   * install ruby
     * build ruby ( possibly need to change build values ( like bleak house? ) )
       * locate ruby source code
@@ -41,7 +41,7 @@
         * ELSE IF check cache for ruby tarball and extract to cache-extract
         * ELSE download ruby to cache and extract to cache-extract
       * configure
-          ./configure --prefix /new/workspace/directory
+          ./configure --prefix /new/sandbox/directory
       * build
           make
       * install
@@ -82,7 +82,7 @@
     * IF installed both ruby and rubygems
     * ELSE installed only rubygems
         export _ORIGINAL_HOME=$HOME
-        export WORKSPACE=/path/to/new/workspace
+        export WORKSPACE=/path/to/new/sandbox
         export HOME=$WORKSPACE
         export _OLD_GEM_HOME=$GEM_HOME
         export _OLD_GEM_PATH=$GEM_PATH
@@ -97,13 +97,13 @@
 
   directory cannot exist... maybe later (then check to be sure it isn't HOME)
   
-  workspace init =>
+  sandbox init =>
      only for new directories
   
   download cache
-     ~/.workspace/sources/ruby
+     ~/.sandbox/sources/ruby
          stored by version/patchlevel
-     ~/.workspace/sources/rubygems
+     ~/.sandbox/sources/rubygems
          stored by version
   
   global config
@@ -142,7 +142,7 @@
      }
   
   user config
-     ~/.workspace/config
+     ~/.sandbox/config
      additional download urls
      change install version choices
   
@@ -152,9 +152,9 @@
   
   build ruby and rubygems
      built in /tmp/?
-     ruby: --prefix new/workspace/directory
-     rubygems: new/workspace/directory/bin/ruby setup.rb
-     installed into new/workspace/directory
+     ruby: --prefix new/sandbox/directory
+     rubygems: new/sandbox/directory/bin/ruby setup.rb
+     installed into new/sandbox/directory
   
   build only rubygems
      need to set RUBYLIB and GEM_HOME
@@ -174,7 +174,7 @@
     
   
   COMMANDS:
-    init /path/to/workspace
+    init /path/to/sandbox
     list (versions)
     list ruby
     list rubygems
@@ -193,9 +193,9 @@
     cache list
   
 ==Examples: ???
-  workspace init newworkspacename
-  workspace ruby --remove -v 1.8.6 -p 86
-  workspace ruby --add -v 1.8.6 --patchlevel 86 --url
+  sandbox init newsandboxname
+  sandbox ruby --remove -v 1.8.6 -p 86
+  sandbox ruby --add -v 1.8.6 --patchlevel 86 --url
   
   
   
@@ -204,8 +204,8 @@
   # will install ruby in /tmp/other/dir/some/dir/[bin|lib/share]
   
   
-  # for creating a rubygems-only workspace (with existing ruby)
-  WORKSPACE=/path/to/new/workspace
+  # for creating a rubygems-only sandbox (with existing ruby)
+  WORKSPACE=/path/to/new/sandbox
   export GEM_HOME=$WORKSPACE/rubygems
   export GEM_PATH=$GEM_HOME
   export RUBYLIB=$WORKSPACE/lib/rubyinstall/lib
@@ -224,8 +224,8 @@
   gempath:
   - $WORKSPACE/rubygems
   
-  # to activate the rubygems-only workspace
-  WORKSPACE=/path/to/new/workspace
+  # to activate the rubygems-only sandbox
+  WORKSPACE=/path/to/new/sandbox
   export GEM_HOME=$WORKSPACE/rubygems
   export GEM_PATH=$GEM_HOME
   export RUBYLIB=$WORKSPACE/lib/rubyinstall/lib

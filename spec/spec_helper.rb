@@ -15,7 +15,7 @@ require 'spec'
 require 'stringio'
 require 'ostruct'
 
-require 'workspace'
+require 'sandbox'
 
 Spec::Runner.configure do |config|
   # == Mock Framework

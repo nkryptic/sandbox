@@ -1,5 +1,5 @@
 
-module Workspace
+module Sandbox
   class Version #:nodoc:
     MAJOR = 0
     MINOR = 1

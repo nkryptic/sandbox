@@ -1,16 +1,16 @@
 require 'rubygems'
 require 'rake'
  
-require 'lib/workspace' unless defined? Workspace
+require 'lib/sandbox' unless defined? Sandbox
  
 begin
   require 'echoe'
   
-  Echoe.new( 'workspace', Workspace::Version::STRING ) do |p|  
+  Echoe.new( 'sandbox', Sandbox::Version::STRING ) do |p|  
     # p.rubyforge_name            = 'nkryptic'
-    # p.summary                   = "Create virtual ruby/rubygems workspaces."
-    p.description               = "Create virtual ruby/rubygems workspaces."
-    p.url                       = "http://github.com/nkryptic/workspace"
+    # p.summary                   = "Create virtual ruby/rubygems sandboxes."
+    p.description               = "Create virtual ruby/rubygems sandboxes."
+    p.url                       = "http://github.com/nkryptic/sandbox"
     p.author                    = "Jacob Radford"
     p.email                     = "nkryptic@gmail.com"
     p.ignore_pattern            = [ "tmp/*", "script/*" ]
@@ -29,12 +29,12 @@ end
 
 Dir[ "#{File.dirname(__FILE__)}/tasks/*.rake" ].sort.each { |ext| load ext }
  
-# desc 'Generate RDoc documentation for Workspace.'
+# desc 'Generate RDoc documentation for Sandbox.'
 # Rake::RDocTask.new( :rdoc ) do |rdoc|
 #   files = [ 'README', 'LICENSE', 'lib/**/*.rb' ]
 #   rdoc.rdoc_files.add( files )
 #   rdoc.main = "README" # page to start on
-#   rdoc.title = "workspace"
+#   rdoc.title = "sandbox"
 #   # rdoc.template = File.exists?( t="/Users/chris/ruby/projects/err/rock/template.rb" ) ? t : "/var/www/rock/template.rb"
 #   rdoc.rdoc_dir = 'doc' # rdoc output folder
 #   rdoc.options << '--inline-source'

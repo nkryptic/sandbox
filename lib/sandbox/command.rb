@@ -2,7 +2,7 @@
 require 'optparse'
 
 
-module Workspace
+module Sandbox
   class Command
     
     ## CLASS METHODS
@@ -36,7 +36,7 @@ module Workspace
     def initialize( name, summary=nil, defaults={} )
       @name = name
       @summary = summary
-      @cli_string = "workspace #{name}"
+      @cli_string = "sandbox #{name}"
       @defaults = defaults
       @options = defaults.dup
       # @option_groups = Hash.new { |h,k| h[k] = [] }
@@ -60,7 +60,7 @@ module Workspace
     def process_options!( args )
       parser.parse!( args )
     rescue OptionParser::ParseError => ex
-      raise WorkspaceError.new( ex.to_s, "#{cli_string} --help" )
+      raise SandboxError.new( ex.to_s, "#{cli_string} --help" )
     else
       options[ :args ] = args
     end
@@ -112,7 +112,7 @@ module Workspace
         configure_parser_options( o, '', parser_opts )
         
         # o.separator "   Options:"
-        configure_parser_options( o, 'Common', Workspace::Command.common_parser_opts )
+        configure_parser_options( o, 'Common', Sandbox::Command.common_parser_opts )
         
         # if arguments
         #   o.separator "  Arguments:"

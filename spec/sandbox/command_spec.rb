@@ -1,12 +1,12 @@
 
 require File.dirname( __FILE__ ) + '/../spec_helper'
-require 'workspace/command'
+require 'sandbox/command'
 
 
-describe Workspace::Command do
+describe Sandbox::Command do
   
   it "should have common options" do
-    copts = Workspace::Command.common_parser_opts
+    copts = Sandbox::Command.common_parser_opts
     copts.detect { |opt| opt.first.include?( '-h' ) }.should_not be_nil
     copts.detect { |opt| opt.first.include?( '--help' ) }.should_not be_nil
     copts.detect { |opt| opt.first.include?( '-v' ) }.should_not be_nil
@@ -17,32 +17,32 @@ describe Workspace::Command do
   
   it "should require a name when calling 'new'" do
     cmd = nil
-    lambda { Workspace::Command.new }.
+    lambda { Sandbox::Command.new }.
         should raise_error( ArgumentError ) { |error| error.message.should =~ /0 for 1/ }
-    lambda { cmd = Workspace::Command.new( 'name' ) }.should_not raise_error()
+    lambda { cmd = Sandbox::Command.new( 'name' ) }.should_not raise_error()
     cmd.name.should == 'name'
   end
   
   it "takes an optional summary on creation" do
     cmd = nil
-    lambda { cmd = Workspace::Command.new( 'name', 'I command' ) }.should_not raise_error()
+    lambda { cmd = Sandbox::Command.new( 'name', 'I command' ) }.should_not raise_error()
     cmd.summary.should == 'I command'
   end
   
   it "takes a hash as it's defaults and options on creation" do
     cmd = nil
     opts = { :something => true, :someone => :me }
-    lambda { cmd = Workspace::Command.new( 'name', 'I command', opts ) }.should_not raise_error()
+    lambda { cmd = Sandbox::Command.new( 'name', 'I command', opts ) }.should_not raise_error()
     cmd.defaults[ :something ].should be_true
     cmd.options[ :someone ].should == :me
   end
   
 end
 
-describe Workspace::Command, 'instance' do
+describe Sandbox::Command, 'instance' do
   
   before( :each ) do
-    @cmd = Workspace::Command.new( 'dummy', 'dummy summary' )
+    @cmd = Sandbox::Command.new( 'dummy', 'dummy summary' )
   end
   
   it "should raise NotImplementedError on execute!" do
@@ -51,7 +51,7 @@ describe Workspace::Command, 'instance' do
   end
   
   it "should have a command string" do
-    @cmd.cli_string.should == "workspace dummy"
+    @cmd.cli_string.should == "sandbox dummy"
   end
   
   it "should have an empty description" do
@@ -72,7 +72,7 @@ describe Workspace::Command, 'instance' do
   end
   
   it "should add common switches to parser" do
-    Workspace::Command.expects( :common_parser_opts )
+    Sandbox::Command.expects( :common_parser_opts )
     @cmd.parser
   end
   
@@ -110,7 +110,7 @@ describe Workspace::Command, 'instance' do
     
     it "should display error on bad option" do
       processor( [ '-x' ] ).
-          should raise_error( Workspace::WorkspaceError ) { |error| error.message.should =~ /^invalid option: -x/ }
+          should raise_error( Sandbox::SandboxError ) { |error| error.message.should =~ /^invalid option: -x/ }
     end
     
   end

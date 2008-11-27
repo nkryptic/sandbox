@@ -1,7 +1,7 @@
 
-# require 'workspace/command'
+# require 'sandbox/command'
 
-module Workspace
+module Sandbox
   module CommandManager
     
     ## CLASS METHODS
@@ -50,7 +50,7 @@ module Workspace
         # populates the command list, by either stubbing each entry
         # or loading it with it's command instance
         def setup_commands
-          Workspace.known_commands.each do |cmd_name|
+          Sandbox.known_commands.each do |cmd_name|
             if @preload
               commands[ cmd_name ] ||= load_command( cmd_name )
             else
@@ -69,23 +69,23 @@ module Workspace
         # converts command name like: 
         #   do_it
         # to: 
-        #   Workspace::Commands::DoIt
+        #   Sandbox::Commands::DoIt
         # 
         # and the file loaded (if command isn't initially available):
-        #   lib/workspace/commands/do_it_command.rb
+        #   lib/sandbox/commands/do_it_command.rb
         def load_command( cmd_name )
           cmd_name = cmd_name.to_s
           retried = false
 
           begin
             const_name = cmd_name.capitalize.gsub( /_(.)/ ) { $1.upcase }
-            Workspace::Commands.const_get("#{const_name}Command").new
+            Sandbox::Commands.const_get("#{const_name}Command").new
           rescue NameError
             if retried then
               raise
             else
               retried = true
-              require "workspace/commands/#{cmd_name}"
+              require "sandbox/commands/#{cmd_name}"
               retry
             end
           end

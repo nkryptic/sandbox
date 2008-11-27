@@ -1,7 +1,7 @@
 
-# require 'workspace/command'
+# require 'sandbox/command'
 
-class Workspace::Commands::InitCommand < Workspace::Command
+class Sandbox::Commands::InitCommand < Sandbox::Command
   
   ## CLASS METHODS
   class << self
@@ -12,7 +12,7 @@ class Workspace::Commands::InitCommand < Workspace::Command
   public
     def initialize
       opts = { :ruby_install => false, :rubygems_install => false, :dryrun => false }
-      super( 'init', "Create a new workspace at the given path", opts )
+      super( 'init', "Create a new sandbox at the given path", opts )
     end
   ## END PUBLIC INSTANCE METHODS
   

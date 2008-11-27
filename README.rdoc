@@ -8,11 +8,11 @@
                               |_|
   
 
-* http://github.com/nkryptic/workspace
+* http://github.com/nkryptic/sandbox
 
 == DESCRIPTION:
 
-Inspired by Python's virtualenv[http://pypi.python.org/pypi/virtualenv] project, this gem will allow you to create multiple self-contained workspaces.  The workspace will have it's own ruby and gem binaries, as well as a script to activate/deactivate the workspace.
+Inspired by Python's virtualenv[http://pypi.python.org/pypi/virtualenv] project, this gem will allow you to create multiple self-contained sandboxes.  The sandbox will have it's own ruby and gem binaries, as well as a script to activate/deactivate the sandbox.
 
 == FEATURES/PROBLEMS:
 
@@ -20,10 +20,10 @@ Inspired by Python's virtualenv[http://pypi.python.org/pypi/virtualenv] project,
 
 == USAGE:
 
-Create a new workspace:
+Create a new sandbox:
   $ cd ~/ruby-projects
-  $ workspace my-new-workspace
-      creating new workspace in /home/nkryptic/ruby-projects/my-new-workspace
+  $ sandbox my-new-sandbox
+      creating new sandbox in /home/nkryptic/ruby-projects/my-new-sandbox
 
 == REQUIREMENTS:
 
@@ -31,12 +31,12 @@ Create a new workspace:
 
 == INSTALL:
 
-  sudo gem install nkryptic-workspace -s http://gems.github.com
+  sudo gem install nkryptic-sandbox -s http://gems.github.com
 
 or
 
   sudo gem sources --add http://gems.github.com
-  sudo gem install nkryptic-workspace
+  sudo gem install nkryptic-sandbox
 
 == LICENSE:
 

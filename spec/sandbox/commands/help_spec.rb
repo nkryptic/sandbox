@@ -1,21 +1,21 @@
 
 require File.dirname( __FILE__ ) + '/../../spec_helper'
-require 'workspace/commands/help'
+require 'sandbox/commands/help'
 
 
-describe Workspace::Commands::HelpCommand do
+describe Sandbox::Commands::HelpCommand do
   
   # it "should set it's name and description when calling 'new'" do
   #   
-  #   Workspace::Commands::HelpCommand.new
+  #   Sandbox::Commands::HelpCommand.new
   # end
   
 end
 
-describe Workspace::Commands::HelpCommand, 'instance' do
+describe Sandbox::Commands::HelpCommand, 'instance' do
   
   before( :each ) do
-    @cmd = Workspace::Commands::HelpCommand.new
+    @cmd = Sandbox::Commands::HelpCommand.new
   end
   
   it "should set it's name and summary when calling 'new'" do
@@ -34,7 +34,7 @@ describe Workspace::Commands::HelpCommand, 'instance' do
   end
   
   # it "should list the commands and their summaries via CommandManager" do
-  #   Workspace::CommandManager.expects( :command_names )
+  #   Sandbox::CommandManager.expects( :command_names )
   #   @cmd.run( ['commands'] )
   # end
   

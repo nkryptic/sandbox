@@ -1,7 +1,7 @@
 
-# require 'workspace/command'
+# require 'sandbox/command'
 
-class Workspace::Commands::HelpCommand < Workspace::Command
+class Sandbox::Commands::HelpCommand < Sandbox::Command
   
   ## CLASS METHODS
   class << self
@@ -27,20 +27,20 @@ class Workspace::Commands::HelpCommand < Workspace::Command
     def show_application_help
       puts %{
         
-        Workspace will create a virtual environment for development.
+        Sandbox will create a virtual environment for development.
         This is a basic help message with pointers to more information.
         
           Usage:
-            workspace -h/--help
-            workspace -v/--version
-            workspace command [arguments...] [options...]
+            sandbox -h/--help
+            sandbox -v/--version
+            sandbox command [arguments...] [options...]
           
           Further help:
-            workspace help commands            list all 'workspace' commands
-            workspace help <COMMAND>           show help on COMMAND
+            sandbox help commands            list all 'sandbox' commands
+            sandbox help <COMMAND>           show help on COMMAND
           
           Basic commands:
-            init          Create a new workspace
+            init          Create a new sandbox
             list          List downloaded or remotely available ruby/rubygems versions
             help          Show detailed help on a specific command
       }.gsub(/^\s{6}/, "")

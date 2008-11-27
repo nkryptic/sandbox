@@ -1,27 +1,27 @@
 
 require File.dirname( __FILE__ ) + '/../../spec_helper'
-require 'workspace/commands/init'
+require 'sandbox/commands/init'
 
 
-describe Workspace::Commands::InitCommand do
+describe Sandbox::Commands::InitCommand do
   
   # it "should set it's name when calling 'new'" do
-  #   Workspace::Command.expects( :initialize ).with( 'init' )
+  #   Sandbox::Command.expects( :initialize ).with( 'init' )
   #   
-  #   Workspace::Commands::InitCommand.new
+  #   Sandbox::Commands::InitCommand.new
   # end
   
 end
 
-describe Workspace::Commands::InitCommand, 'instance' do
+describe Sandbox::Commands::InitCommand, 'instance' do
   
   before( :each ) do
-    @cmd = Workspace::Commands::InitCommand.new
+    @cmd = Sandbox::Commands::InitCommand.new
   end
   
   it "should set it's name and summary when calling 'new'" do
     @cmd.name.should == 'init'
-    @cmd.summary.should =~ /Create a new workspace/
+    @cmd.summary.should =~ /Create a new sandbox/
   end
   
   it "should set default options" do
@@ -53,8 +53,8 @@ describe Workspace::Commands::InitCommand, 'instance' do
   it "should look in cache for it first"
   it "should unpackage downloads"
   it "should look in cache for it first"
-  it "should create workspace directory structure"
-  it "should build products into workspace"
+  it "should create sandbox directory structure"
+  it "should build products into sandbox"
   it "should setup needed scripts in WORKSPACE/bin"
   it "should validate target directory"
   it "should symlink gem command"

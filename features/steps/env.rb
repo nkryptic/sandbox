@@ -1,4 +1,4 @@
-require File.dirname(__FILE__) + "/../../lib/workspace"
+require File.dirname(__FILE__) + "/../../lib/sandbox"
 
 # gem 'cucumber'
 # require 'cucumber'

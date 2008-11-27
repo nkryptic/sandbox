@@ -1,11 +1,11 @@
 
 require File.dirname( __FILE__ ) + '/../spec_helper'
-require 'workspace/command_manager'
+require 'sandbox/command_manager'
 
-describe Workspace::CommandManager do
+describe Sandbox::CommandManager do
   
   before( :all ) do
-    @mgr = Workspace::CommandManager
+    @mgr = Sandbox::CommandManager
     @knowns = [ :known, :party, :pardon ]
     @cmd_names = %w{ known party pardon }
   end
@@ -19,13 +19,13 @@ describe Workspace::CommandManager do
   describe "when listing commands" do
     
     it "should call setup, but not load commands" do
-      Workspace.expects( :known_commands ).returns( @knowns )
+      Sandbox.expects( :known_commands ).returns( @knowns )
       @mgr.expects( :load_command ).never
       @mgr.commands.should have(3).items
     end
     
     it "should call setup and load commands with preload=true" do
-      Workspace.expects( :known_commands ).returns( @knowns )
+      Sandbox.expects( :known_commands ).returns( @knowns )
       @mgr.expects( :load_command ).times( 3 )
       @mgr.preload = true
       @mgr.commands.should have(3).items
@@ -39,14 +39,14 @@ describe Workspace::CommandManager do
       dummy = mock( 'DummyCommand' )
       dummy_instance = mock( 'DummyCommand' )
       dummy.expects( :new ).returns( dummy_instance )
-      Workspace::Commands.expects( :const_get ).with( 'DummyCommand' ).
+      Sandbox::Commands.expects( :const_get ).with( 'DummyCommand' ).
           times(2).raises( NameError ).then.returns( dummy )
-      @mgr.expects( :require ).with( 'workspace/commands/dummy' )
+      @mgr.expects( :require ).with( 'sandbox/commands/dummy' )
       @mgr.send( :load_command, :dummy ).should == dummy_instance
     end
     
     it "should raise error when loading command class fails" do
-      @mgr.expects( :require ).with( 'workspace/commands/dummy' )
+      @mgr.expects( :require ).with( 'sandbox/commands/dummy' )
       lambda { @mgr.send( :load_command, :dummy ) }.should raise_error( NameError )
     end
     

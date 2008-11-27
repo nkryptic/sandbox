@@ -2,7 +2,7 @@ $:.unshift(File.dirname(__FILE__)) unless \
     $:.include?(File.dirname(__FILE__)) || $:.include?(File.expand_path(File.dirname(__FILE__)))
 
 
-module Workspace
+module Sandbox
   
   class << self
     
@@ -13,7 +13,7 @@ module Workspace
     
   end
   
-  class WorkspaceError < StandardError
+  class SandboxError < StandardError
     attr_reader :help_str
     def initialize( msg=nil, help_str=nil )
       super msg
@@ -24,23 +24,23 @@ module Workspace
       value if value != self.class.name
     end
   end
-  class InWorkspaceError < WorkspaceError
+  class InSandboxError < SandboxError
   end
-  class UnknownCommand < WorkspaceError
-    def initialize( cmd, help_str='workspace --help' )
+  class UnknownCommand < SandboxError
+    def initialize( cmd, help_str='sandbox --help' )
       msg = "unrecognized command '#{cmd}'"
       super msg, help_str
     end
   end
-  class AmbiguousCommand < WorkspaceError
-    def initialize( cmd, possibles, help_str='workspace --help' )
+  class AmbiguousCommand < SandboxError
+    def initialize( cmd, possibles, help_str='sandbox --help' )
       possibles_str = possibles.collect{ |p| "'#{p}'" }.join( ", ")
       msg = "command '#{cmd}' is ambiguous (matches #{possibles_str})"
       super msg, help_str
     end
   end
-  class UnknownSwitch < WorkspaceError
-    def initialize( switch, help_str='workspace --help' )
+  class UnknownSwitch < SandboxError
+    def initialize( switch, help_str='sandbox --help' )
       msg = "invalid option #{switch}"
       super msg, help_str
     end
@@ -48,14 +48,14 @@ module Workspace
   
 end
 
-require 'workspace/version'
-# require 'workspace/cli'
-require 'workspace/command_manager'
-require 'workspace/command'
+require 'sandbox/version'
+# require 'sandbox/cli'
+require 'sandbox/command_manager'
+require 'sandbox/command'
 
-Workspace.known_commands.each do |cmd|
-  require File.dirname( __FILE__ ) + '/workspace/commands/' + cmd.to_s
+Sandbox.known_commands.each do |cmd|
+  require File.dirname( __FILE__ ) + '/sandbox/commands/' + cmd.to_s
 end
-# Dir[ File.dirname( __FILE__ ) + '/workspace/commands/*' ].each do |file|
+# Dir[ File.dirname( __FILE__ ) + '/sandbox/commands/*' ].each do |file|
 #   require file
 # end

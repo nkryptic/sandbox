@@ -1,21 +1,21 @@
 
-require 'workspace'
-# require 'workspace/command_manager'
+require 'sandbox'
+# require 'sandbox/command_manager'
 
-module Workspace  
+module Sandbox  
   class CLI
     
     ## CLASS METHODS
     class << self
       
-      # invokes workspace via command-line ARGV as the options
+      # invokes sandbox via command-line ARGV as the options
       def execute( args = ARGV )
         if ENV[ 'WORKSPACE' ]
-          raise InWorkspaceError, "You cannot run workspace while in a loaded workspace"
+          raise InSandboxError, "You cannot run sandbox while in a loaded sandbox"
         end
         parse( args ).execute!
         
-      rescue WorkspaceError => ex
+      rescue SandboxError => ex
         puts "Error: #{ex.message}"
         puts "see '#{ex.help_str}'" if ex.help_str
         exit( 1 )
@@ -48,7 +48,7 @@ module Workspace
       @command = nil
       @command_name = 'help'
       @command_args = []
-      @command_manager = Workspace::CommandManager
+      @command_manager = Sandbox::CommandManager
     end
     
     
@@ -78,7 +78,7 @@ module Workspace
         when '-h', '--help'
           args.clear
         when '-V', '--version'
-          puts "workspace v#{ Workspace::Version::STRING }"
+          puts "sandbox v#{ Sandbox::Version::STRING }"
           exit
       else
         raise UnknownSwitch.new( arg )
