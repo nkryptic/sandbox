@@ -4,31 +4,36 @@ require 'workspace/command_manager'
 
 describe Workspace::CommandManager do
   
-  describe "when initializing" do
-    
-    it "should call setup, but not load commands when passed autoload=false" do
-      Workspace::CommandManager.stubs( :commands ).returns( [ :a, :b, :c ] )
-      Workspace::CommandManager.any_instance.expects( :load_command ).never
-      @mgr = Workspace::CommandManager.new
-      @mgr.command_names.should have(3).items
-    end
-    
-    it "should call setup and load commands when passed autoload=true" do
-      Workspace::CommandManager.stubs( :commands ).returns( [ :a, :b, :c ] )
-      Workspace::CommandManager.any_instance.expects( :load_command ).times( 3 )
-      @mgr = Workspace::CommandManager.new( true )
-      @mgr.command_names.should have(3).items
-    end
-    
+  before( :all ) do
+    @knowns = [ :known, :party, :pardon ]
+    @cmd_names = %w{ known party pardon }
+  end
+  before( :each ) do
+    @mgr = Workspace::CommandManager
+  end
+  after( :each ) do
+    @mgr.instance_eval { instance_variables.each { |v| remove_instance_variable v } }
   end
   
-end
-
-describe Workspace::CommandManager, 'instance' do
-  
-  before( :each ) do
-    @mgr = Workspace::CommandManager.new
-    @cmd_names = %w{ known party pardon }
+  describe "when listing commands" do
+    
+    it "should call setup, but not load commands" do
+      @mgr.expects( :known_commands ).returns( @knowns )
+      @mgr.expects( :load_command ).never
+      # Workspace::CommandManager.instance_eval { const_set 'OLDCOMMANDS', Workspace::CommandManager::COMMANDS }
+      # Workspace::CommandManager.instance_eval { const_set 'COMMANDS', { :a=>false, :b=>false, :c=>false }  }
+      @mgr.commands.should have(3).items
+      # Workspace::CommandManager.instance_eval { const_set 'COMMANDS', Workspace::CommandManager::OLDCOMMANDS  }
+      # Workspace::CommandManager.instance_eval { remove_const 'OLDCOMMANDS' }
+    end
+    
+    it "should call setup and load commands with preload=true" do
+      @mgr.expects( :known_commands ).returns( @knowns )
+      @mgr.expects( :load_command ).times( 3 )
+      @mgr.preload = true
+      @mgr.commands.should have(3).items
+    end
+    
   end
   
   describe "when calling load_command [PRIVATE]" do
@@ -40,21 +45,13 @@ describe Workspace::CommandManager, 'instance' do
       Workspace::Commands.expects( :const_get ).with( 'DummyCommand' ).
           times(2).raises( NameError ).then.returns( dummy )
       @mgr.expects( :require ).with( 'workspace/commands/dummy_command' )
-      Workspace::CommandManager.publicize_methods do
-        @mgr.load_command( :dummy ).should == dummy_instance
-      end
+      @mgr.send( :load_command, :dummy ).should == dummy_instance
     end
     
     it "should raise error when loading command class fails" do
-      # dummy = mock( 'DummyCommand' )
-      # dummy_instance = mock( 'DummyCommand' )
-      # dummy.expects( :new ).returns( dummy_instance )
-      Workspace::Commands.expects( :const_get ).with( 'DummyCommand' ).
-          times(2).raises( NameError )
+      # Workspace::Commands.expects( :const_get ).with( 'DummyCommand' ).times(2).raises( NameError )
       @mgr.expects( :require ).with( 'workspace/commands/dummy_command' )
-      Workspace::CommandManager.publicize_methods do
-        lambda { @mgr.load_command( :dummy ) }.should raise_error( NameError )
-      end
+      lambda { @mgr.send( :load_command, :dummy ) }.should raise_error( NameError )
     end
     
   end
@@ -82,8 +79,7 @@ describe Workspace::CommandManager, 'instance' do
     
     it "should return command with valid name argument" do
       known = mock( 'KnownCommand' )
-      # @mgr.instance_eval "@commands['known']=(#{ known }"
-      @mgr.instance_eval { @commands[ :known ] = known }
+      @mgr.instance_eval { commands[ :known ] = known }
       @mgr[ 'known' ].should_not be_nil
       @mgr[ 'known' ].should == known
     end
@@ -106,3 +102,4 @@ describe Workspace::CommandManager, 'instance' do
   end
   
 end
+

@@ -48,8 +48,9 @@ describe Workspace::CLI do
   describe "creating an instance" do
     
     it "should load a new CommandManager" do
-      Workspace::CommandManager.expects( :new )
-      Workspace::CLI.new
+      # Workspace::CommandManager.expects( :new )
+      @cli = Workspace::CLI.new
+      @cli.send( :command_manager ).should == Workspace::CommandManager
     end
     
   end
@@ -91,35 +92,6 @@ describe Workspace::CLI do
           processor( arg, 'unknown' ).should raise_error( SystemExit ) { |error| error.status.should == 0 }
         end
       end
-      
-      # [ [ [ '-v', '--verbose' ], :high ], [ [ '-q', '--quiet' ], false ] ].each do |args,level|
-      #   args.each do |arg|
-      #     it "should set instance's verbose option to #{level} for switch '#{arg}'" do
-      #       @cli.expects( :find_command )
-      #       
-      #       process( arg )
-      #       Workspace::CLI.publicize_methods do
-      #         @cli.options[ :verbosity ].should == level
-      #         @cli.command_args.should == []
-      #       end
-      #     end
-      #   end
-      # end
-      
-      # [ [ [ '-v', '--verbose' ], :high ], [ [ '-q', '--quiet' ], false ] ].each do |args,level|
-      #   args.each do |arg|
-      #     it "should not ignore additional arguments after '#{arg}'" do
-      #       @cli.expects( :find_command ).with( 'dummy' ).returns( 'dummy' )
-      #     
-      #       process( arg, 'dummy', '-z' )
-      #       Workspace::CLI.publicize_methods do
-      #         @cli.options[ :verbosity ].should == level
-      #         @cli.command_name.should == 'dummy'
-      #         @cli.command_args.should == ['-z']
-      #       end
-      #     end
-      #   end
-      # end
 
       [ '-h', '--help', nil ].each do |arg|
         it "should use help command for switch '#{arg}'" do
@@ -252,13 +224,13 @@ describe Workspace::CLI do
   describe "instance calling command_manager" do
     
     before( :each ) do
-      @mgr = mock( 'CommandManager' )
-      Workspace::CommandManager.stubs( :new ).once.then.returns( @mgr )
+      # @mgr = mock( 'CommandManager' )
+      # Workspace::CommandManager.stubs( :new ).once.then.returns( @mgr )
       @cli = Workspace::CLI.new
     end
     
     it "should ask command manager for 'help' command" do
-      @mgr.expects( :find_command_matches ).with( 'help' ).returns( ['help'] )
+      Workspace::CommandManager.expects( :find_command_matches ).with( 'help' ).returns( ['help'] )
       @cli.parse_args!( ['-h'] )
       Workspace::CLI.publicize_methods do
         @cli.command_name.should == 'help'
@@ -271,15 +243,15 @@ describe Workspace::CLI do
   describe "instance calling execute!" do
     
     before( :each ) do
-      @mgr = mock( 'CommandManager' )
-      Workspace::CommandManager.stubs( :new ).once.then.returns( @mgr )
+      # @mgr = mock( 'CommandManager' )
+      # Workspace::CommandManager.stubs( :new ).once.then.returns( @mgr )
       @cli = Workspace::CLI.new
     end
     
     it "should ask command manager for 'help' command" do
       cmd = mock()
       cmd.expects( :run ).with( [] )
-      @mgr.expects( :[] ).with( 'help' ).returns( cmd )
+      Workspace::CommandManager.expects( :[] ).with( 'help' ).returns( cmd )
       @cli.execute!
     end
     

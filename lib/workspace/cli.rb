@@ -36,7 +36,7 @@ module Workspace
       @command = nil
       @command_name = 'help'
       @command_args = []
-      @command_manager = Workspace::CommandManager.new
+      @command_manager = Workspace::CommandManager
     end
     
     
