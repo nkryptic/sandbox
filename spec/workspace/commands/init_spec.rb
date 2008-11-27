@@ -1,6 +1,6 @@
 
 require File.dirname( __FILE__ ) + '/../../spec_helper'
-require 'workspace/commands/init_command'
+require 'workspace/commands/init'
 
 
 describe Workspace::Commands::InitCommand do

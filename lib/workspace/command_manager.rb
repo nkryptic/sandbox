@@ -1,16 +1,11 @@
 
-require 'workspace/command'
+# require 'workspace/command'
 
 module Workspace
   module CommandManager
     
     ## CLASS METHODS
     class << self
-      
-      # the global list of commands to manage
-      def known_commands
-        [ :help, :init ]
-      end
       
       ## PUBLIC CLASS METHODS
       public
@@ -55,7 +50,7 @@ module Workspace
         # populates the command list, by either stubbing each entry
         # or loading it with it's command instance
         def setup_commands
-          known_commands.each do |cmd_name|
+          Workspace.known_commands.each do |cmd_name|
             if @preload
               commands[ cmd_name ] ||= load_command( cmd_name )
             else
@@ -90,7 +85,7 @@ module Workspace
               raise
             else
               retried = true
-              require "workspace/commands/#{cmd_name}_command"
+              require "workspace/commands/#{cmd_name}"
               retry
             end
           end

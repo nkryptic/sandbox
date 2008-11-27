@@ -58,13 +58,10 @@ module Workspace
     end
     
     def process_options!( args )
-      begin
-        parser.parse!( args )
-      rescue OptionParser::ParseError => e
-        puts "Error: #{ e }"
-        puts "see '#{cli_string} --help'"
-        exit 1
-      end
+      parser.parse!( args )
+    rescue OptionParser::ParseError => ex
+      raise WorkspaceError.new( ex.to_s, "#{cli_string} --help" )
+    else
       options[ :args ] = args
     end
     

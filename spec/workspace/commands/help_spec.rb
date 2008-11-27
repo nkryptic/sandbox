@@ -1,6 +1,6 @@
 
 require File.dirname( __FILE__ ) + '/../../spec_helper'
-require 'workspace/commands/help_command'
+require 'workspace/commands/help'
 
 
 describe Workspace::Commands::HelpCommand do
@@ -26,6 +26,11 @@ describe Workspace::Commands::HelpCommand, 'instance' do
   it "should show application default help message with no arguments" do
     @cmd.expects( :show_application_help )
     @cmd.run( [] )
+  end
+  
+  it "should show help's help message with '-h'" do
+    @cmd.expects( :show_help )
+    @cmd.run( ['-h'] )
   end
   
   # it "should list the commands and their summaries via CommandManager" do

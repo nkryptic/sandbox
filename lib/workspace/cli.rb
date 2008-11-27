@@ -1,6 +1,6 @@
 
 require 'workspace'
-require 'workspace/command_manager'
+# require 'workspace/command_manager'
 
 module Workspace  
   class CLI
@@ -11,10 +11,22 @@ module Workspace
       # invokes workspace via command-line ARGV as the options
       def execute( args = ARGV )
         if ENV[ 'WORKSPACE' ]
-          puts "Error: You cannot run workspace while in a loaded workspace."
-          exit( 1 )
+          raise InWorkspaceError, "You cannot run workspace while in a loaded workspace"
         end
         parse( args ).execute!
+        
+      rescue WorkspaceError => ex
+        puts "Error: #{ex.message}"
+        puts "see '#{ex.help_str}'" if ex.help_str
+        exit( 1 )
+      # rescue StandardError, Timeout::Error => ex
+      #   alert_error "While executing gem ... (#{ex.class})\n    #{ex.to_s}"
+      #   ui.errs.puts "\t#{ex.backtrace.join "\n\t"}" if
+      #     Gem.configuration.backtrace
+      #   exit( 1 )
+      # rescue Interrupt
+      #   alert_error "Interrupted"
+      #   exit( 1 )
       end
       
       # returns a new CLI instance which has parsed the given arguments.
@@ -52,18 +64,13 @@ module Workspace
     # * load command and have it process any add't options
     # * catches exceptions for unknown switches or commands
     def parse_args!( args )
-      begin
-        if args.first =~ /^-/
-          process_switch!( args.shift, args )
-        elsif args.first
-          @command_name = args.shift.to_s.downcase
-          @command_args = args.slice!(0..-1)
-        end
-        @command_name = find_command( @command_name )
-      rescue UnknownSwitch, UnknownCommand, AmbiguousCommand => ex
-        @command_name = 'help'
-        @command_args = [ ex ]
+      if args.first =~ /^-/
+        process_switch!( args.shift, args )
+      elsif args.first
+        @command_name = args.shift.to_s.downcase
+        @command_args = args.slice!(0..-1)
       end
+      @command_name = find_command( @command_name )
     end
     
     def process_switch!( arg, args )
@@ -85,7 +92,7 @@ module Workspace
       matches = command_manager.find_command_matches( cmd_name )
       
       raise UnknownCommand.new( cmd_name ) if matches.size < 1
-      raise AmbiguousCommand.new( *matches ) if matches.size > 1
+      raise AmbiguousCommand.new( cmd_name, matches ) if matches.size > 1
       
       matches.first
     end
@@ -95,28 +102,8 @@ module Workspace
     ## PRIVATE INSTANCE METHODS
     private
       attr_reader :command_manager, :command_name, :command_args
-      
-      # def command_manager
-      #   @command_manager ||= Workspace::CommandManager.new
-      # end
+    
     ## END PRIVATE INSTANCE METHODS
-    
-    
-    class UnknownCommand < Exception
-      def initialize( arg )
-        @arguement = arg
-      end
-    end
-    class AmbiguousCommand < Exception
-      def initialize( *args )
-        @commands = args
-      end
-    end
-    class UnknownSwitch < Exception
-      def initialize( arg )
-        @switch = arg
-      end
-    end
     
   end
   

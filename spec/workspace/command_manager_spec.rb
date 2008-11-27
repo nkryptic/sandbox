@@ -5,11 +5,12 @@ require 'workspace/command_manager'
 describe Workspace::CommandManager do
   
   before( :all ) do
+    @mgr = Workspace::CommandManager
     @knowns = [ :known, :party, :pardon ]
     @cmd_names = %w{ known party pardon }
   end
   before( :each ) do
-    @mgr = Workspace::CommandManager
+    @mgr.instance_eval { instance_variables.each { |v| remove_instance_variable v } }
   end
   after( :each ) do
     @mgr.instance_eval { instance_variables.each { |v| remove_instance_variable v } }
@@ -18,17 +19,13 @@ describe Workspace::CommandManager do
   describe "when listing commands" do
     
     it "should call setup, but not load commands" do
-      @mgr.expects( :known_commands ).returns( @knowns )
+      Workspace.expects( :known_commands ).returns( @knowns )
       @mgr.expects( :load_command ).never
-      # Workspace::CommandManager.instance_eval { const_set 'OLDCOMMANDS', Workspace::CommandManager::COMMANDS }
-      # Workspace::CommandManager.instance_eval { const_set 'COMMANDS', { :a=>false, :b=>false, :c=>false }  }
       @mgr.commands.should have(3).items
-      # Workspace::CommandManager.instance_eval { const_set 'COMMANDS', Workspace::CommandManager::OLDCOMMANDS  }
-      # Workspace::CommandManager.instance_eval { remove_const 'OLDCOMMANDS' }
     end
     
     it "should call setup and load commands with preload=true" do
-      @mgr.expects( :known_commands ).returns( @knowns )
+      Workspace.expects( :known_commands ).returns( @knowns )
       @mgr.expects( :load_command ).times( 3 )
       @mgr.preload = true
       @mgr.commands.should have(3).items
@@ -44,13 +41,12 @@ describe Workspace::CommandManager do
       dummy.expects( :new ).returns( dummy_instance )
       Workspace::Commands.expects( :const_get ).with( 'DummyCommand' ).
           times(2).raises( NameError ).then.returns( dummy )
-      @mgr.expects( :require ).with( 'workspace/commands/dummy_command' )
+      @mgr.expects( :require ).with( 'workspace/commands/dummy' )
       @mgr.send( :load_command, :dummy ).should == dummy_instance
     end
     
     it "should raise error when loading command class fails" do
-      # Workspace::Commands.expects( :const_get ).with( 'DummyCommand' ).times(2).raises( NameError )
-      @mgr.expects( :require ).with( 'workspace/commands/dummy_command' )
+      @mgr.expects( :require ).with( 'workspace/commands/dummy' )
       lambda { @mgr.send( :load_command, :dummy ) }.should raise_error( NameError )
     end
     
@@ -94,7 +90,6 @@ describe Workspace::CommandManager do
     
     it "should return sorted list of valid commands" do
       cmds = { :c => 1, :a => 2, :b => 3 }
-      # @mgr.instance_eval "@commands['known']=(#{ known }"
       @mgr.instance_eval { @commands = cmds }
       @mgr.command_names.should == [ 'a', 'b', 'c' ]
     end

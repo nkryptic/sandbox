@@ -1,5 +1,5 @@
 
-require 'workspace/command'
+# require 'workspace/command'
 
 class Workspace::Commands::HelpCommand < Workspace::Command
   
@@ -15,8 +15,13 @@ class Workspace::Commands::HelpCommand < Workspace::Command
     end
     
     def execute!
-      # show_help
-      show_application_help
+      arg = options[ :args ].first
+      case arg
+        when /^commands/i
+          raise
+      else
+        show_application_help
+      end
     end
     
     def show_application_help

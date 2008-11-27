@@ -1,5 +1,5 @@
 
-require 'workspace/command'
+# require 'workspace/command'
 
 class Workspace::Commands::InitCommand < Workspace::Command
   

@@ -86,7 +86,6 @@ describe Workspace::Command, 'instance' do
       @cmd.show_help
     end
     io.stdout.should =~ /^Usage: #{@cmd.usage}/
-    # io.stdout.should =~ /options/
   end
   
   describe "calling run" do
@@ -110,11 +109,8 @@ describe Workspace::Command, 'instance' do
     end
     
     it "should display error on bad option" do
-      io = capture do
-        processor( [ '-x' ] ).should raise_error( SystemExit ) { |error| error.status.should == 1 }
-      end
-      io.stdout.should =~ /^Error: /
-      io.stdout.should =~ /^see 'workspace dummy --help'/
+      processor( [ '-x' ] ).
+          should raise_error( Workspace::WorkspaceError ) { |error| error.message.should =~ /^invalid option: -x/ }
     end
     
   end
