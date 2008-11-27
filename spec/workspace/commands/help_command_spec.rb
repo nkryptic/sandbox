@@ -24,7 +24,9 @@ describe Workspace::Commands::HelpCommand, 'instance' do
   end
   
   it "should respond to 'commands'"
+  it "should list the commands and their summaries from CommandManager"
   it "should respond to command 'dummy'"
   it "should show possible arguments"
+  it "should show application default help message with no arguments"
   
 end

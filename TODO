@@ -69,7 +69,7 @@
       * install rubygems
           /path/to/system/ruby setup.rb --prefix=$WORKSPACE/lib/rubyinstall
       * restore .gemrc file
-          cp /tmp/.gemrc ~/.gemrc.orig
+          cp /tmp/.gemrc.orig ~/.gemrc
       * maybe symlink the binary?
           ln -s $WORKSPACE/lib/rubyinstall/bin $WORKSPACE/bin
   * install needed activation script

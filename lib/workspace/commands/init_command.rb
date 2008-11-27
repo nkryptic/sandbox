@@ -11,7 +11,8 @@ class Workspace::Commands::InitCommand < Workspace::Command
   ## PUBLIC INSTANCE METHODS
   public
     def initialize
-      super( 'init', "Create a new workspace at the given path" )
+      opts = { :ruby_install => false, :rubygems_install => false, :dryrun => false }
+      super( 'init', "Create a new workspace at the given path", opts )
     end
   ## END PUBLIC INSTANCE METHODS
   
