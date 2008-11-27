@@ -10,7 +10,7 @@ module Sandbox
       
       # invokes sandbox via command-line ARGV as the options
       def execute( args = ARGV )
-        if ENV[ 'WORKSPACE' ]
+        if ENV[ 'SANDBOX' ]
           raise InSandboxError, "You cannot run sandbox while in a loaded sandbox"
         end
         parse( args ).execute!

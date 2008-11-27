@@ -61,37 +61,37 @@
         * ELSE IF check cache for rubygems tarball and extract to cache-extract
         * ELSE download ruby to cachegems and extract to cache-extract
       * set environment variables
-          export GEM_HOME=$WORKSPACE/rubygems
+          export GEM_HOME=$SANDBOX/rubygems
           export GEM_PATH=$GEM_HOME
-          export RUBYLIB=$WORKSPACE/lib/rubyinstall/lib
+          export RUBYLIB=$SANDBOX/lib/rubyinstall/lib
       * backup user's .gemrc file
           cp ~/.gemrc /tmp/.gemrc.orig
       * install rubygems
-          /path/to/system/ruby setup.rb --prefix=$WORKSPACE/lib/rubyinstall
+          /path/to/system/ruby setup.rb --prefix=$SANDBOX/lib/rubyinstall
       * restore .gemrc file
           cp /tmp/.gemrc.orig ~/.gemrc
       * maybe symlink the binary?
-          ln -s $WORKSPACE/lib/rubyinstall/bin $WORKSPACE/bin
+          ln -s $SANDBOX/lib/rubyinstall/bin $SANDBOX/bin
   * install needed activation script
     * install gem wrapper? (need to backup)
         # need to create
         # could be useful to make sure env is set
         # but ultimately an issue since there is no way for subsequent commands installed via gems?
-        cat $WORKSPACE/bin/gem 
-        $WORKSPACE/lib/rubyinstall/bin/gem --config-file $WORKSPACE/etc/gemrc $*
+        cat $SANDBOX/bin/gem 
+        $SANDBOX/lib/rubyinstall/bin/gem --config-file $SANDBOX/etc/gemrc $*
     * IF installed both ruby and rubygems
     * ELSE installed only rubygems
         export _ORIGINAL_HOME=$HOME
-        export WORKSPACE=/path/to/new/sandbox
-        export HOME=$WORKSPACE
+        export SANDBOX=/path/to/new/sandbox
+        export HOME=$SANDBOX
         export _OLD_GEM_HOME=$GEM_HOME
         export _OLD_GEM_PATH=$GEM_PATH
         export _OLD_RUBYLIB=$RUBYLIB
         export _OLD_PATH=$PATH
-        export GEM_HOME=$WORKSPACE/rubygems
+        export GEM_HOME=$SANDBOX/rubygems
         export GEM_PATH=$GEM_HOME
-        export RUBYLIB=$WORKSPACE/lib/rubyinstall/lib
-        export PATH=$WORKSPACE/bin:$PATH
+        export RUBYLIB=$SANDBOX/lib/rubyinstall/lib
+        export PATH=$SANDBOX/bin:$PATH
 
 
 
@@ -205,31 +205,31 @@
   
   
   # for creating a rubygems-only sandbox (with existing ruby)
-  WORKSPACE=/path/to/new/sandbox
-  export GEM_HOME=$WORKSPACE/rubygems
+  SANDBOX=/path/to/new/sandbox
+  export GEM_HOME=$SANDBOX/rubygems
   export GEM_PATH=$GEM_HOME
-  export RUBYLIB=$WORKSPACE/lib/rubyinstall/lib
+  export RUBYLIB=$SANDBOX/lib/rubyinstall/lib
   cp ~/.gemrc /tmp/.gemrc.orig
-  ruby setup.rb --prefix=$WORKSPACE/lib/rubyinstall
+  ruby setup.rb --prefix=$SANDBOX/lib/rubyinstall
   cp /tmp/.gemrc ~/.gemrc.orig
-  ln -s $GEM_HOME/bin $WORKSPACE/bin
+  ln -s $GEM_HOME/bin $SANDBOX/bin
   
-  cat $WORKSPACE/bin/gem # need to create - could be useful to make sure env is set, but ultimately an issue since there is no way for subsequent commands installed via gems?
-  $WORKSPACE/lib/rubyinstall/bin/gem --config-file $WORKSPACE/etc/gemrc $*
+  cat $SANDBOX/bin/gem # need to create - could be useful to make sure env is set, but ultimately an issue since there is no way for subsequent commands installed via gems?
+  $SANDBOX/lib/rubyinstall/bin/gem --config-file $SANDBOX/etc/gemrc $*
   
   # Not that important, since the ENV needs setting also
-  cat $WORKSPACE/rubygems/gemrc # need to create
+  cat $SANDBOX/rubygems/gemrc # need to create
   ---
-  gemhome: $WORKSPACE/rubygems
+  gemhome: $SANDBOX/rubygems
   gempath:
-  - $WORKSPACE/rubygems
+  - $SANDBOX/rubygems
   
   # to activate the rubygems-only sandbox
-  WORKSPACE=/path/to/new/sandbox
-  export GEM_HOME=$WORKSPACE/rubygems
+  SANDBOX=/path/to/new/sandbox
+  export GEM_HOME=$SANDBOX/rubygems
   export GEM_PATH=$GEM_HOME
-  export RUBYLIB=$WORKSPACE/lib/rubyinstall/lib
-  export PATH=$WORKSPACE/bin:$PATH
+  export RUBYLIB=$SANDBOX/lib/rubyinstall/lib
+  export PATH=$SANDBOX/bin:$PATH
   
   
   

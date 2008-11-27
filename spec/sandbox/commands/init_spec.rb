@@ -55,7 +55,7 @@ describe Sandbox::Commands::InitCommand, 'instance' do
   it "should look in cache for it first"
   it "should create sandbox directory structure"
   it "should build products into sandbox"
-  it "should setup needed scripts in WORKSPACE/bin"
+  it "should setup needed scripts in SANDBOX/bin"
   it "should validate target directory"
   it "should symlink gem command"
   it "should handle install of additional gems"

@@ -12,12 +12,12 @@ describe Sandbox::CLI do
     
     it "should exit with error when running from a loaded sandbox" do
       begin
-        ENV[ 'WORKSPACE' ] = 'something'
+        ENV[ 'SANDBOX' ] = 'something'
         lambda { Sandbox::CLI.execute }.should raise_error( SystemExit ) { |error| error.status.should == 1 }
       rescue
         raise
       ensure
-        ENV[ 'WORKSPACE' ] = nil
+        ENV[ 'SANDBOX' ] = nil
       end
     end
     
