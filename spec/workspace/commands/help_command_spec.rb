@@ -23,10 +23,17 @@ describe Workspace::Commands::HelpCommand, 'instance' do
     @cmd.summary.should =~ /Provide help on/
   end
   
-  it "should respond to 'commands'"
-  it "should list the commands and their summaries from CommandManager"
+  it "should show application default help message with no arguments" do
+    @cmd.expects( :show_application_help )
+    @cmd.run( [] )
+  end
+  
+  # it "should list the commands and their summaries via CommandManager" do
+  #   Workspace::CommandManager.expects( :command_names )
+  #   @cmd.run( ['commands'] )
+  # end
+  
   it "should respond to command 'dummy'"
   it "should show possible arguments"
-  it "should show application default help message with no arguments"
   
 end

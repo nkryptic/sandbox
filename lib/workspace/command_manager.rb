@@ -17,39 +17,40 @@ module Workspace
     
     
     ## PUBLIC INSTANCE METHODS
-    
-    # creates a new CommandManager instance
-    # will populate the available commands list by either:
-    # * creating the entry, but not loading the Command instance
-    # * creating the entry and loading the Command instance
-    # passing true will initialize each command
-    def initialize( autoload=false )
-      @commands = {}
-      setup_commands( autoload )
-    end
-    
-    # returns a list of the command names which match +cmd_name+
-    # partial matches are included
-    def find_command_matches( cmd_name )
-      len = cmd_name.length
-      # command_names.select { |name| name[ 0, len ] == cmd_name }
-      command_names.select { |name| name[ /^#{cmd_name}/ ] }
-    end
-    
-    # returns the full list of all command names
-    def command_names
-      @commands.keys.map { |key| key.to_s }.sort
-    end
-    
-    # return the command matching (exactly) +cmd_name+
-    # will load the command if necessary
-    def []( cmd_name )
-      cmd_name = cmd_name.to_s.downcase
-      return nil if cmd_name.empty?
-      cmd_name = cmd_name.intern
-      return nil if @commands[ cmd_name ].nil?
-      @commands[ cmd_name ] ||= load_command(cmd_name)
-    end
+    public
+      
+      # creates a new CommandManager instance
+      # will populate the available commands list by either:
+      # * creating the entry, but not loading the Command instance
+      # * creating the entry and loading the Command instance
+      # passing true will initialize each command
+      def initialize( autoload=false )
+        @commands = {}
+        setup_commands( autoload )
+      end
+      
+      # returns a list of the command names which match +cmd_name+
+      # partial matches are included
+      def find_command_matches( cmd_name )
+        len = cmd_name.length
+        # command_names.select { |name| name[ 0, len ] == cmd_name }
+        command_names.select { |name| name[ /^#{cmd_name}/ ] }
+      end
+      
+      # returns the full list of all command names
+      def command_names
+        @commands.keys.map { |key| key.to_s }.sort
+      end
+      
+      # return the command matching (exactly) +cmd_name+
+      # will load the command if necessary
+      def []( cmd_name )
+        cmd_name = cmd_name.to_s.downcase
+        return nil if cmd_name.empty?
+        cmd_name = cmd_name.intern
+        return nil if @commands[ cmd_name ].nil?
+        @commands[ cmd_name ] ||= load_command(cmd_name)
+      end
     ## END PUBLIC INSTANCE METHODS
     
     

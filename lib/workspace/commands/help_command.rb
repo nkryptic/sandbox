@@ -14,9 +14,32 @@ class Workspace::Commands::HelpCommand < Workspace::Command
       super( 'help', "Provide help on general usage or individual commands" )
     end
     
-    # def execute!
-    #   show_help
-    # end
+    def execute!
+      # show_help
+      show_application_help
+    end
+    
+    def show_application_help
+      puts %{
+        
+        Workspace will create a virtual environment for development.
+        This is a basic help message with pointers to more information.
+        
+          Usage:
+            workspace -h/--help
+            workspace -v/--version
+            workspace command [arguments...] [options...]
+          
+          Further help:
+            workspace help commands            list all 'workspace' commands
+            workspace help <COMMAND>           show help on COMMAND
+          
+          Basic commands:
+            init          Create a new workspace
+            list          List downloaded or remotely available ruby/rubygems versions
+            help          Show detailed help on a specific command
+      }.gsub(/^\s{6}/, "")
+    end
     
     ###### RUBYGEMS HELP COMMAND
     # def arguments # :nodoc:
