@@ -4,21 +4,27 @@ require 'sandbox/cli'
 
 describe Sandbox::CLI do
   
+  describe "when creating an instance" do
+    it "should raise an error when running from a loaded sandbox" do
+      begin
+        ENV[ 'SANDBOX' ] = 'something'
+        lambda { Sandbox::CLI.new }.should raise_error( Sandbox::LoadedSandboxError )
+      ensure
+        ENV[ 'SANDBOX' ] = nil
+      end
+    end
+  end
+  
   describe "calling execute" do
     
     before( :each ) do
       @instance = stub_everything()
     end
     
-    it "should exit with error when running from a loaded sandbox" do
-      begin
-        ENV[ 'SANDBOX' ] = 'something'
-        lambda { Sandbox::CLI.execute }.should raise_error( SystemExit ) { |error| error.status.should == 1 }
-      rescue
-        raise
-      ensure
-        ENV[ 'SANDBOX' ] = nil
-      end
+    it "should handle all errors" do
+      Sandbox::CLI.stubs( :new ).raises( StandardError )
+      Sandbox::CLI.expects( :handle_error ).with( instance_of( StandardError ) )
+      Sandbox::CLI.execute
     end
     
     it "should attempt to parse ARGV by default" do
@@ -51,7 +57,7 @@ describe Sandbox::CLI do
       @cli = Sandbox::CLI.new
     end
     
-    it "should load a new CommandManager" do
+    it "should load the CommandManager" do
       @cli.send( :command_manager ).should == Sandbox::CommandManager
     end
     
@@ -157,12 +163,12 @@ describe Sandbox::CLI do
 
         it "should exit with message for invalid switch '-x'" do
           processor( '-x' ).
-              should raise_error( Sandbox::UnknownSwitch ) { |error| error.message.should =~ /-x\b/ }
+              should raise_error( Sandbox::UnknownSwitchError ) { |error| error.message.should =~ /-x\b/ }
         end
 
         it "should exit with message for invalid argument 'chunkybacon'" do
           processor( 'chunkybacon' ).
-              should raise_error( Sandbox::UnknownCommand ) { |error| error.message.should =~ /chunkybacon/ }
+              should raise_error( Sandbox::UnknownCommandError ) { |error| error.message.should =~ /chunkybacon/ }
         end
 
       end
@@ -195,14 +201,14 @@ describe Sandbox::CLI do
         mgr = mock( 'CommandManager' )
         mgr.expects( :find_command_matches ).returns( [] )
         @cli.expects( :command_manager ).returns( mgr )
-        processor( 'chunkybacon' ).should raise_error( Sandbox::UnknownCommand )
+        processor( 'chunkybacon' ).should raise_error( Sandbox::UnknownCommandError )
       end
 
       it "should raise AmbiguousCommand for multiple matching commands" do
         mgr = mock( 'CommandManager' )
         mgr.expects( :find_command_matches ).with( 'chunky' ).returns( ['chunkybacon','chunkycheese'] )
         @cli.expects( :command_manager ).returns( mgr )
-        processor( 'chunky' ).should raise_error( Sandbox::AmbiguousCommand )
+        processor( 'chunky' ).should raise_error( Sandbox::AmbiguousCommandError )
       end
 
     end

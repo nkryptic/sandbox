@@ -10,8 +10,8 @@ module Sandbox
       def common_parser_opts
         [
           [ ["-h", '--help', 'Show help on this command'], Proc.new { |val,opts| opts[ :help ] = true } ],
-          [ ["-v", '--verbose', 'Show more output'], Proc.new { |val,opts| opts[ :verbosity ] ||= 0; opts[ :verbosity ] += 1 } ],
-          [ ["-q", '--quiet', 'Show less output'], Proc.new { |val,opts| opts[ :verbosity ] ||= 0; opts[ :verbosity ] -= 1 } ],
+          [ ["-v", '--verbose', 'Show more output'], Proc.new { |val,opts| Sandbox.increase_verbosity } ],
+          [ ["-q", '--quiet', 'Show less output'], Proc.new { |val,opts| Sandbox.decrease_verbosity } ],
         ]
       end
     end
@@ -60,9 +60,14 @@ module Sandbox
     def process_options!( args )
       parser.parse!( args )
     rescue OptionParser::ParseError => ex
-      raise SandboxError.new( ex.to_s, "#{cli_string} --help" )
+      raise_parse_error( ex.reason, ex.args )
     else
       options[ :args ] = args
+    end
+    
+    def raise_parse_error( reason, args=[] )
+      help_str = "#{cli_string} --help"
+      raise Sandbox::ParseError.new( reason, args, help_str )
     end
     
     # Override to display a longer description of what this command does.
@@ -114,7 +119,7 @@ module Sandbox
         # o.separator "   Options:"
         configure_parser_options( o, 'Common', Sandbox::Command.common_parser_opts )
         
-        if arguments
+        if arguments.size > 0
           o.separator "  Arguments:"
           nested_formatter( arguments ).each do |line|
             o.separator( line )

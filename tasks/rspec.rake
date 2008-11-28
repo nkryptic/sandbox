@@ -36,12 +36,16 @@ namespace :spec do
     # t.spec_opts = [ "--format", "specdoc" ]
     t.spec_files = FileList[ 'spec/**/*_spec.rb' ]
   end
-
-  # [ :models, :controllers, :views, :helpers, :lib ].each do |sub|
-  #   desc "Run the code examples in spec/#{sub}"
-  #   Spec::Rake::SpecTask.new( sub ) do |t|
-  #     t.spec_opts = [ '--options', "spec/spec.opts" ]
-  #     t.spec_files = FileList[ 'spec/#{sub}/**/*_spec.rb' ]
-  #   end
-  # end
+  
+  desc "Run all the specs in spec directory individually"
+  task :deps do
+    individual_specs = Dir["spec/**/*_spec.rb"]
+    individual_specs.each do |single_spec|
+      if not system "spec #{single_spec} --options spec/spec.opts &> /dev/null"
+        puts "Dependency Issues: #{single_spec}"
+      else
+        puts "OK: #{single_spec}"
+      end
+    end
+  end
 end

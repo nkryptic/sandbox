@@ -10,23 +10,9 @@ module Sandbox
       
       # invokes sandbox via command-line ARGV as the options
       def execute( args = ARGV )
-        if ENV[ 'SANDBOX' ]
-          raise InSandboxError, "You cannot run sandbox while in a loaded sandbox"
-        end
         parse( args ).execute!
-        
-      rescue SandboxError => ex
-        puts "Error: #{ex.message}"
-        puts "see '#{ex.help_str}'" if ex.help_str
-        exit( 1 )
-      # rescue StandardError, Timeout::Error => ex
-      #   alert_error "While executing gem ... (#{ex.class})\n    #{ex.to_s}"
-      #   ui.errs.puts "\t#{ex.backtrace.join "\n\t"}" if
-      #     Gem.configuration.backtrace
-      #   exit( 1 )
-      # rescue Interrupt
-      #   alert_error "Interrupted"
-      #   exit( 1 )
+      rescue Exception => error
+        handle_error( error )
       end
       
       # returns a new CLI instance which has parsed the given arguments.
@@ -36,6 +22,25 @@ module Sandbox
         cli = new
         cli.parse_args!( args )
         cli
+      end
+      
+      def handle_error( error )
+        case error
+          # when Net::SSH::AuthenticationFailed
+          #   abort "authentication failed for `#{error.message}'"
+          when Sandbox::Error
+            abort( error.message )
+          # when StandardError, Timeout::Error
+          #   alert_error "While executing gem ... (#{ex.class})\n    #{ex.to_s}"
+          #   ui.errs.puts "\t#{ex.backtrace.join "\n\t"}" if
+          #     Gem.configuration.backtrace
+          #   exit( 1 )
+          # when Interrupt
+          #   alert_error "Interrupted"
+          #   exit( 1 )
+        else
+          raise error
+        end
       end
     end
     ## END CLASS METHODS
@@ -49,6 +54,8 @@ module Sandbox
       @command_name = 'help'
       @command_args = []
       @command_manager = Sandbox::CommandManager
+      
+      verify_environment!
     end
     
     
@@ -81,7 +88,7 @@ module Sandbox
           puts "sandbox v#{ Sandbox::Version::STRING }"
           exit
       else
-        raise UnknownSwitch.new( arg )
+        raise Sandbox::UnknownSwitchError.new( arg )
       end
     end
     
@@ -91,8 +98,8 @@ module Sandbox
     def find_command( cmd_name )
       matches = command_manager.find_command_matches( cmd_name )
       
-      raise UnknownCommand.new( cmd_name ) if matches.size < 1
-      raise AmbiguousCommand.new( cmd_name, matches ) if matches.size > 1
+      raise Sandbox::UnknownCommandError.new( cmd_name ) if matches.size < 1
+      raise Sandbox::AmbiguousCommandError.new( cmd_name, matches ) if matches.size > 1
       
       matches.first
     end
@@ -102,6 +109,10 @@ module Sandbox
     ## PRIVATE INSTANCE METHODS
     private
       attr_reader :command_manager, :command_name, :command_args
+      
+      def verify_environment!
+        raise LoadedSandboxError if ENV[ 'SANDBOX' ]
+      end
     
     ## END PRIVATE INSTANCE METHODS
     

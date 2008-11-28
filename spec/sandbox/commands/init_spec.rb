@@ -32,34 +32,94 @@ describe Sandbox::Commands::InitCommand, 'instance' do
   
   describe "when process_options! called" do
     
-    it "should not process target path"
+    it "should not process target path" do
+      args = [ '/path/to/new/sandbox' ]
+      @cmd.process_options!( args )
+      @cmd.options[ :args ].should == args
+    end
     
   end
   
   describe "when execute! called" do
     
-    it "should fail with more than one argument left over"
-    it "should fail without target path provided"
-    it "should fail when base path up to target does not exist"
-    it "should create all directories when create_all_directories option is set"
+    before( :all ) do
+      @abs_dir = '/path/to/new'
+      @abs_target = @abs_dir + '/target'
+      @rel_target = 'target'
+      @deep_rel_dir = 'path/to/new'
+      @deep_rel_target = @deep_rel_dir + 'target'
+    end
+    
+    it "should show it's help when no args passed" do
+      @cmd.options[ :args ] = []
+      @cmd.expects( :show_help )
+      @cmd.execute!
+    end
+    
+    it "should fail with more than one argument left over" do
+      @cmd.options[ :args ] = [ '/path/to/new/sandbox', '/path/to/new/sandbox2' ]
+      @cmd.expects( :raise )
+      @cmd.execute!
+    end
+    
+    # it "should raise error when get_target returns nil" do
+    #   @cmd.options[ :args ] = [ @abs_target ]
+    #   @cmd.expects( :get_target ).with( @abs_target ).returns( nil )
+    #   lambda { @cmd.execute! }.should raise_error( Sandbox::SandboxError ) { |error| error.message.should =~ /target directory exists/ }
+    # end
+    
+    # it "should expand path from current directory with non-absolute target" do
+    #   File.expects( :exists? ).with( @rel_target ).returns( false )
+    #   FileUtils.expects( :pwd ).returns( @abs_dir )
+    #   FileUtils.expects( :mkdir_p ).with( @abs_target )
+    #   @cmd.options[ :args ] = [ @rel_target ]
+    #   @cmd.execute!
+    # end
+    # 
+    # it "should fail when target exists" do
+    #   # File.expects( :directory? ).with( dirpath ).returns( true )
+    #   File.expects( :exists? ).with( @abs_target ).returns( true )
+    #   @cmd.options[ :args ] = [ @abs_target ]
+    #   @cmd.expects( :raise )
+    #   @cmd.execute!
+    # end
+    
+    # it "should fail when base path up target is not writable"
+    
+    it "should create all directories for target as needed"
     
   end
   
-  it "should load configuration"
-  it "should merge loaded configuration with defaults or options???" 
-  it "should download ruby"
-  it "should look in cache for it first"
-  it "should download rubygems"
-  it "should look in cache for it first"
-  it "should unpackage downloads"
-  it "should look in cache for it first"
-  it "should create sandbox directory structure"
-  it "should build products into sandbox"
-  it "should setup needed scripts in SANDBOX/bin"
-  it "should validate target directory"
-  it "should symlink gem command"
-  it "should handle install of additional gems"
-  it "should cache downloads in userdir?"
+  describe "when get_target called" do
+    
+    it "should fail when base path up target is not writable"
+    
+  end
+  
+  
+  it "should fail when not writable"
+  it "should expand path on relative target"
+  it "should create directory $HOME/.sandbox"
+  it "should create directory for target"
+  it "should create entire path for target"
+  it "should not create target until it is needed"
+  
+  
+  # it "should load configuration"
+  # it "should merge loaded configuration with defaults or options???" 
+  # it "should download ruby"
+  # it "should look in cache for it first"
+  # it "should download rubygems"
+  # it "should look in cache for it first"
+  # it "should unpackage downloads"
+  # it "should look in cache for it first"
+  # it "should create sandbox directory structure"
+  # it "should build products into sandbox"
+  # it "should setup needed scripts in SANDBOX/bin"
+  # it "should validate target directory"
+  # it "should symlink gem command"
+  # it "should handle install of additional gems"
+  # it "should cache downloads in userdir?"
   
   # init:
   #   get ruby version to install

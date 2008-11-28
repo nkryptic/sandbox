@@ -39,6 +39,7 @@ describe Sandbox::Commands::HelpCommand, 'instance' do
     Sandbox::CommandManager.expects( :command_names ).returns( [ 'help', 'init' ] )
     Sandbox::CommandManager.expects( :[] ).with( 'help' ).returns( help_cmd )
     Sandbox::CommandManager.expects( :[] ).with( 'init' ).returns( init_cmd )
+    @cmd.expects( :puts )
     @cmd.run( ['commands'] )
   end
   
