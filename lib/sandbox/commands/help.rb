@@ -16,12 +16,45 @@ class Sandbox::Commands::HelpCommand < Sandbox::Command
     
     def execute!
       arg = options[ :args ].first
-      case arg
-        when /^commands/i
-          raise
+      if matches?( 'commands', arg )
+        show_commands
+      elsif arg
+        unless Sandbox::CommandManager.command_names.include?( arg )
+          raise UnknownCommand.new( arg, "#{cli_string} commands" )
+        end
+        command = Sandbox::CommandManager[ arg ]
+        command.run( ["--help"] )
       else
         show_application_help
       end
+    end
+    
+    def usage
+      "#{cli_string} ARGUMENT"
+    end
+    
+    def arguments # :nodoc:
+      [
+        [ 'commands',   "List all 'sandbox' commands" ],
+        [ '<command>',  "Show specific help for <command>" ]
+      ].freeze
+    end
+    
+    def show_commands
+      out = []
+      out << "Available commands for the sandbox utility:"
+      out << ""
+      cmds = Sandbox::CommandManager.command_names.collect do |n|
+        cmd = Sandbox::CommandManager[ n ]
+        [ cmd.name, cmd.summary ]
+      end
+      out.concat( nested_formatter( cmds ) )
+      out << ""
+      out << "For help on a particular command, use 'sandbox help COMMAND'."
+      out << nil
+      out << "Commands may be abbreviated, so long as they are unambiguous."
+      out << "e.g. 'sandbox h init' is short for 'sandbox help init'."
+      puts out.join( "\n" )
     end
     
     def show_application_help

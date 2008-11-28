@@ -114,24 +114,30 @@ module Sandbox
         # o.separator "   Options:"
         configure_parser_options( o, 'Common', Sandbox::Command.common_parser_opts )
         
-        # if arguments
-        #   o.separator "  Arguments:"
-        #   o.separator "    #{arguments}"
-        #   o.separator ""
-        # end
+        if arguments
+          o.separator "  Arguments:"
+          nested_formatter( arguments ).each do |line|
+            o.separator( line )
+          end
+          # o.separator "    #{arguments}"
+          o.separator ""
+        end
         
         if summary
           o.separator "  Summary:"
-          o.separator "    #{summary}"
-          # formatter( summary ).each do |line|
-          #   o.separator( line )
-          # end
+          # o.separator "    #{summary}"
+          formatter( summary ).each do |line|
+            o.separator( line )
+          end
           o.separator ""
         end
         
         if description
           o.separator "  Description:"
-          o.separator "    #{description}"
+          formatter( description ).each do |line|
+            o.separator( line )
+          end
+          # o.separator "    #{description}"
           o.separator ""
         end
         
@@ -149,11 +155,30 @@ module Sandbox
     
     def formatter( text, padding=4, width=80 )
       # return unless block_given?
-      wrapped = wrap( text, max - padding )
+      wrapped = wrap( text, width - padding )
       wrapped.split( "\n" ).collect do |line|
-        "%#{max}s" % line.strip
+        "#{' ' * padding}%s" % line.strip
         # yield "%#{max}s" % line.strip
       end
+    end
+    
+    def nested_formatter( lines, padding=4, width=80 )
+      out = []
+      return out if lines.empty?
+      left_margin = 4
+      center_width = lines.map { |n| n.first.size }.max + 4
+      right_width = 80 - left_margin - center_width
+      wrap_indent = ' ' * (left_margin + center_width)
+      format = "#{' ' * left_margin}%-#{center_width}s%s"
+      
+      lines.each do |n|
+        right = wrap( n[1], right_width ).split( "\n" )
+        out << sprintf( format, n[0], right.shift )
+        until right.empty? do
+          out << "#{wrap_indent}#{right.shift}"
+        end
+      end
+      out
     end
     
     # Wraps +text+ to +width+
@@ -161,14 +186,19 @@ module Sandbox
       text.gsub(/(.{1,#{width}})( +|$\n?)|(.{1,#{width}})/, "\\1\\3\n")
     end
     
+    def matches?( full, part )
+      return false if part.nil? or part.empty?
+      full.slice( 0..part.length ) == part
+    end
+    
     
     ###### RUBYGEMS COMMAND
     # Override to provide details of the arguments a command takes.
     # It should return a left-justified string, one argument per line.
-    # def arguments
-    #   ""
-    # end
-    # 
+    def arguments
+      []
+    end
+    
     # Override to display the default values of the command
     # options. (similar to +arguments+, but displays the default
     # values).

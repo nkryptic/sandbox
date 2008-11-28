@@ -81,11 +81,36 @@ describe Sandbox::Command, 'instance' do
     @cmd.parser
   end
   
-  it "should provide a default help message using usage" do
-    io = capture do
-      @cmd.show_help
+  describe "calling show_help" do
+    
+    it "should provide a default help message using usage" do
+      io = capture do
+        @cmd.show_help
+      end
+      io.stdout.should =~ /^Usage: #{@cmd.usage}/
     end
-    io.stdout.should =~ /^Usage: #{@cmd.usage}/
+
+    it "should show possible arguments when set" do
+      arg = [ 'ARGUMENT', 'an argument' ]
+      @cmd.stubs( :arguments ).returns( [ arg ] )
+      io = capture do
+        @cmd.show_help
+      end
+      io.stdout.should =~ /Arguments:/
+      io.stdout.should =~ /#{arg[0]}/
+      io.stdout.should =~ /#{arg[1]}/
+    end
+    
+    it "should show possible description when set" do
+      desc = "this is a description"
+      @cmd.stubs( :description ).returns( desc )
+      io = capture do
+        @cmd.show_help
+      end
+      io.stdout.should =~ /Description:/
+      io.stdout.should =~ /#{desc}/
+    end
+    
   end
   
   describe "calling run" do
