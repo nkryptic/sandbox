@@ -23,7 +23,8 @@ class Sandbox::Commands::HelpCommand < Sandbox::Command
           raise Sandbox::UnknownCommandError.new( arg, "#{cli_string} commands" )
         end
         command = Sandbox::CommandManager[ arg ]
-        command.run( ["--help"] )
+        # command.run( ["--help"] )
+        command.show_help
       else
         show_application_help
       end

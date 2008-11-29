@@ -3,17 +3,21 @@ require File.dirname( __FILE__ ) + '/../../spec_helper'
 require 'sandbox/commands/init'
 
 
-describe Sandbox::Commands::InitCommand do
-  
-  # it "should set it's name when calling 'new'" do
-  #   Sandbox::Command.expects( :initialize ).with( 'init' )
-  #   
-  #   Sandbox::Commands::InitCommand.new
-  # end
-  
-end
+# describe Sandbox::Commands::InitCommand do
+#   it "should be magic" do
+#     Sandbox::Commands::InitCommand.new
+#   end
+# end
 
 describe Sandbox::Commands::InitCommand, 'instance' do
+    
+  # before( :all ) do
+  #   @abs_dir = '/path/to/new'
+  #   @abs_target = @abs_dir + '/target'
+  #   @rel_target = 'target'
+  #   @deep_rel_dir = 'path/to/new'
+  #   @deep_rel_target = @deep_rel_dir + 'target'
+  # end
   
   before( :each ) do
     @cmd = Sandbox::Commands::InitCommand.new
@@ -41,14 +45,6 @@ describe Sandbox::Commands::InitCommand, 'instance' do
   end
   
   describe "when execute! called" do
-    
-    before( :all ) do
-      @abs_dir = '/path/to/new'
-      @abs_target = @abs_dir + '/target'
-      @rel_target = 'target'
-      @deep_rel_dir = 'path/to/new'
-      @deep_rel_target = @deep_rel_dir + 'target'
-    end
     
     it "should show it's help when no args passed" do
       @cmd.options[ :args ] = []
@@ -90,15 +86,84 @@ describe Sandbox::Commands::InitCommand, 'instance' do
     
   end
   
-  describe "when get_target called" do
+  describe "when resolve_target called" do
     
-    it "should fail when base path up target is not writable"
+    before( :all ) do
+      @abs_dir = '/path/to/new'
+      @abs_target = @abs_dir + '/target'
+      @rel_target = 'target'
+      @deep_rel_dir = 'path/to/new'
+      @deep_rel_target = @deep_rel_dir + '/' + 'target'
+      @abs_deep_target = @abs_dir + '/' + @deep_rel_target
+    end
+    
+    describe "with relative path" do
+      
+      it "should raise error when target exists" do
+        FileUtils.expects( :pwd ).returns( @abs_dir )
+        File.expects( :exists? ).with( @abs_target ).returns( true )
+        lambda { @cmd.resolve_target( @rel_target ) }.should raise_error
+      end
+      
+      it "should raise error when parent of target is not writable" do
+        FileUtils.expects( :pwd ).returns( @abs_dir )
+        # File.expects( :directory? ).with( @abs_dir ).returns( true )
+        File.expects( :exists? ).with( @abs_target ).returns( false )
+        File.expects( :directory? ).with( @abs_dir ).returns( true )
+        File.expects( :writable? ).with( @abs_dir ).returns( false )
+        lambda { @cmd.resolve_target( @rel_target ) }.should raise_error
+      end
+      
+      it "should raise error when point on path up to target is not writable" do
+        # File.expects( :directory? ).with( @abs_dir ).returns( true )
+        FileUtils.expects( :pwd ).returns( @abs_dir )
+        File.expects( :exists? ).with( @abs_deep_target ).returns( false )
+        File.expects( :directory? ).with( '/path/to/new/path/to/new' ).returns( false ).times(2)
+        File.expects( :directory? ).with( '/path/to/new/path/to' ).returns( true )
+        File.expects( :writable? ).with( '/path/to/new/path/to' ).returns( false )
+        lambda { @cmd.resolve_target( @deep_rel_target ) }.should raise_error
+      end
+      
+      it "should return the absolute path" do
+        FileUtils.expects( :pwd ).returns( @abs_dir )
+        File.expects( :exists? ).with( @abs_target ).returns( false )
+        File.expects( :directory? ).with( @abs_dir ).returns( true )
+        File.expects( :writable? ).with( @abs_dir ).returns( true )
+        target = @cmd.resolve_target( @rel_target )
+        target.should == @abs_target
+      end
+      
+    end
+    
+    describe "with absolute path" do
+      
+      it "should raise error when target exists" do
+        File.expects( :exists? ).with( @abs_target ).returns( true )
+        lambda { @cmd.resolve_target( @abs_target ) }.should raise_error
+      end
+      
+      it "should raise error when point on path up to target is not writable" do
+        # File.expects( :directory? ).with( @abs_dir ).returns( true )
+        File.expects( :exists? ).with( @abs_target ).returns( false )
+        File.expects( :directory? ).with( @abs_dir ).returns( false ).times(2)
+        File.expects( :directory? ).with( '/path/to' ).returns( false ).times(2)
+        File.expects( :directory? ).with( '/path' ).returns( true )
+        File.expects( :writable? ).with( '/path' ).returns( false )
+        lambda { @cmd.resolve_target( @abs_target ) }.should raise_error
+      end
+      
+      it "should return the absolute path" do
+        File.expects( :exists? ).with( @abs_target ).returns( false )
+        File.expects( :directory? ).with( @abs_dir ).returns( true )
+        File.expects( :writable? ).with( @abs_dir ).returns( true )
+        target = @cmd.resolve_target( @abs_target )
+        target.should == @abs_target
+      end
+      
+    end
     
   end
   
-  
-  it "should fail when not writable"
-  it "should expand path on relative target"
   it "should create directory $HOME/.sandbox"
   it "should create directory for target"
   it "should create entire path for target"

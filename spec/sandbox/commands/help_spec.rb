@@ -3,14 +3,11 @@ require File.dirname( __FILE__ ) + '/../../spec_helper'
 require 'sandbox/commands/help'
 
 
-describe Sandbox::Commands::HelpCommand do
-  
-  # it "should set it's name and description when calling 'new'" do
-  #   
-  #   Sandbox::Commands::HelpCommand.new
-  # end
-  
-end
+# describe Sandbox::Commands::HelpCommand do
+#   it "should be magic" do
+#     Sandbox::Commands::HelpCommand.new
+#   end
+# end
 
 describe Sandbox::Commands::HelpCommand, 'instance' do
   
@@ -45,7 +42,8 @@ describe Sandbox::Commands::HelpCommand, 'instance' do
   
   it "should respond to command 'dummy'" do
     dummy = mock( 'DummyCommand' )
-    dummy.expects( :run ).with( ['--help'] )
+    # dummy.expects( :run ).with( ['--help'] )
+    dummy.expects( :show_help )
     Sandbox::CommandManager.expects( :command_names ).returns( [ 'dummy' ] )
     Sandbox::CommandManager.expects( :[] ).with( 'dummy' ).returns( dummy )
     @cmd.run( ['dummy'] )
