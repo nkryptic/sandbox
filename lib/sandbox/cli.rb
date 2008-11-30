@@ -24,20 +24,17 @@ module Sandbox
         cli
       end
       
+      # pretty error handling
       def handle_error( error )
         case error
-          # when Net::SSH::AuthenticationFailed
-          #   abort "authentication failed for `#{error.message}'"
           when Sandbox::Error
             abort( error.message )
-          # when StandardError, Timeout::Error
-          #   alert_error "While executing gem ... (#{ex.class})\n    #{ex.to_s}"
-          #   ui.errs.puts "\t#{ex.backtrace.join "\n\t"}" if
-          #     Gem.configuration.backtrace
-          #   exit( 1 )
-          # when Interrupt
-          #   alert_error "Interrupted"
-          #   exit( 1 )
+          when StandardError #, Timeout::Error
+            message = [ "Error: #{error.message}" ]
+            message.concat( error.backtrace.collect { |bt| "    #{bt}" } ) if Sandbox.really_verbose?
+            abort( message.join( "\n" ) )
+          when Interrupt
+            abort( "Interrupted" )
         else
           raise error
         end
@@ -45,23 +42,36 @@ module Sandbox
     end
     ## END CLASS METHODS
     
+    DEFAULTS = {
+      :gems => [ 'rake', ]
+    }
     
     ## PUBLIC INSTANCE METHODS
     
-    # setup of a new CLI instance and create CommandManager
+    # The options for this execution.
+    attr_reader :options
+    
+    # setup of a new CLI instance
     def initialize
-      @command = nil
-      @command_name = 'help'
-      @command_args = []
-      @command_manager = Sandbox::CommandManager
-      
+      @options = DEFAULTS.dup
+      @parser = nil
       verify_environment!
     end
     
     
     # get and run the command
     def execute!
-      command_manager[ @command_name ].run( @command_args )
+      targets = options.delete( :args )
+      
+      if targets.size < 1
+        raise Sandbox::Error.new( 'no target specified - see `sandbox --help` for assistance' )
+      elsif targets.size > 1
+        raise Sandbox::Error.new( 'multiple targets specified - see `sandbox --help` for assistance' )
+      end
+      
+      options[ :target ] = targets[0]
+      
+      Sandbox::Installer.new( options ).populate
     end
     
     # processes +args+ to:
@@ -71,44 +81,98 @@ module Sandbox
     # * load command and have it process any add't options
     # * catches exceptions for unknown switches or commands
     def parse_args!( args )
-      if args.first =~ /^-/
-        process_switch!( args.shift, args )
-      elsif args.first
-        @command_name = args.shift.to_s.downcase
-        @command_args = args.slice!(0..-1)
-      end
-      @command_name = find_command( @command_name )
+      options[ :original_args ] = args.dup
+      parser.parse!( args )
+    rescue OptionParser::ParseError => ex
+      raise_parse_error( ex.reason, ex.args )
+    else
+      options[ :args ] = args
     end
     
-    def process_switch!( arg, args )
-      case arg
-        when '-h', '--help'
-          args.clear
-        when '-V', '--version'
-          puts "sandbox v#{ Sandbox::Version::STRING }"
-          exit
-      else
-        raise Sandbox::UnknownSwitchError.new( arg )
+    def parser
+      @parser ||= OptionParser.new do |o|
+        o.set_summary_indent('  ')
+        o.program_name = 'sandbox TARGET'
+        o.define_head "Create virtual ruby/rubygems sandboxes."
+        o.separator ""
+        
+        o.separator "ARGUMENTS:"
+        o.separator "  TARGET      Target path to new sandbox.  Must not exist beforehand."
+        o.separator ""
+        
+        o.separator "OPTIONS"
+        o.on( '-g', '--gems gem1,gem2', Array, 'Gems to install after sandbox is created. (defaults to [rake])' ) { |gems| @options[ :gems ] = gems }
+        o.on( '-n', '--no-gems', 'Do not install any gems after sandbox is created.)' ) { @options[ :gems ] = [] }
+        o.on( '-q', '--quiet', 'Show less output. (multiple allowed)' ) { |f| Sandbox.decrease_verbosity }
+        o.on( '-v', '--verbose', 'Show more output. (multiple allowed)' ) { |f| Sandbox.increase_verbosity }
+        o.on_tail( '-h', '--help', 'Show this help message and exit.' ) { puts o; exit }
+        o.on_tail( '-H', '--long-help', 'Show the full description about the program' ) { puts long_help; exit }
+        o.on_tail( '-V', '--version', 'Display the program version and exit.' ) { puts o; exit }
+        o.separator ""
       end
     end
     
-    # returns the command instance which matches +cmd_name+
-    # it performs partial matches to allow shortcuts
-    # raises errors for no or many matches
-    def find_command( cmd_name )
-      matches = command_manager.find_command_matches( cmd_name )
-      
-      raise Sandbox::UnknownCommandError.new( cmd_name ) if matches.size < 1
-      raise Sandbox::AmbiguousCommandError.new( cmd_name, matches ) if matches.size > 1
-      
-      matches.first
+    def show_help
+      puts parser
     end
+    
+    def long_help
+      unindent( <<-HELP )
+      --------------------------------------------------------------------------------
+        Sandbox is a utility to create sandboxed Ruby/Rubygems environments.
+        
+        It is meant to address the following issues:
+        1. Conflicts with unspecified gem dependency versions.
+        2. Applications can have their own gem repositories.
+        3. Permissions for installing your own gems.
+        4. Ability to try gems out without installing into your global repository.
+        5. A Simple way to enable this.
+        
+        Running from your own gem repositories is fairly straight-forward, but 
+        managing the necessary environment is a pain.  This utility will create a new
+        environment which may be activated by the script `bin/activate` in your
+        sandbox directory.
+        
+        Run the script with the following to enable your new environment:
+          $ source bin/activate
+        
+        When you want to leave the environment:
+          $ deactivate
+        
+        NOTES:
+        1. It creates an environment that has its own installation directory for Gems.
+        2. It doesn't share gems with other sandbox environments.
+        3. It (optionally) doesn't use the globally installed gems either.
+        4. It will use a local to the sandbox .gemrc file
+        
+        WARNINGS:
+        Activating your sandbox environment will change your HOME directory
+        temporarily to the sandbox directory.  Other environment variables are set to
+        enable this funtionality, so if you may experience odd behavior.  Everything
+        should be reset when you deactivate the sandbox.
+      HELP
+    end
+    
+    def unindent( output )
+      indent = output[/\A\s*/]
+      output.strip.gsub(/^#{indent}/, "")
+    end
+    # # Merge a set of command options with the set of default options
+    # # (without modifying the default option hash).
+    # def merge_options(new_options)
+    #   @options = @defaults.clone
+    #   new_options.each do |k,v| @options[k] = v end
+    # end
+    
     ## END PUBLIC INSTANCE METHODS
     
     
     ## PRIVATE INSTANCE METHODS
     private
-      attr_reader :command_manager, :command_name, :command_args
+    
+      def raise_parse_error( reason, args=[] )
+        raise Sandbox::ParseError.new( reason, args )
+      end
       
       def verify_environment!
         raise LoadedSandboxError if ENV[ 'SANDBOX' ]

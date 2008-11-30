@@ -6,11 +6,6 @@ module Sandbox
   
   class << self
     
-    # the global list of commands
-    def known_commands
-      [ :help, :init ].freeze
-    end
-    
     def verbosity
       @verbosity ||= 0
     end
@@ -23,20 +18,21 @@ module Sandbox
       @verbosity = verbosity - 1
     end
     
+    def quiet?() verbosity < 0 end
+    def really_quiet?() verbosity < 1 end
+    def verbose?() verbosity > 0 end
+    def really_verbose?() verbosity > 1 end
+    
+    def config
+      @config ||= Sandbox::Config.new
+    end
+    
   end
   
 end
 
 require 'sandbox/version'
 require 'sandbox/errors'
-# require 'sandbox/cli'
-require 'sandbox/command_manager'
-require 'sandbox/command'
+require 'sandbox/config'
+require 'sandbox/installer'
 
-Sandbox.known_commands.each do |cmd|
-  require File.dirname( __FILE__ ) + '/sandbox/commands/' + cmd.to_s
-end
-
-# Dir[ File.dirname( __FILE__ ) + '/sandbox/commands/*' ].each do |file|
-#   require file
-# end
