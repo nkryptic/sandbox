@@ -23,16 +23,11 @@ module Sandbox
     def verbose?() verbosity > 0 end
     def really_verbose?() verbosity > 1 end
     
-    def config
-      @config ||= Sandbox::Config.new
-    end
-    
   end
   
 end
 
 require 'sandbox/version'
 require 'sandbox/errors'
-require 'sandbox/config'
 require 'sandbox/installer'
 

@@ -7,16 +7,47 @@
   |___/\__,_|_| |_|\__,_|_.__/ \___/_/\_\
   
 
-
 * http://github.com/nkryptic/sandbox
 
 == DESCRIPTION:
 
-Inspired by Python's virtualenv[http://pypi.python.org/pypi/virtualenv] project, this gem will allow you to create multiple self-contained sandboxes.  The sandbox will have it's own ruby and gem binaries, as well as a script to activate/deactivate the sandbox.
+Inspired by Python's virtualenv[http://pypi.python.org/pypi/virtualenv] 
+project, Sandbox is a utility to create sandboxed Ruby/Rubygems environments.
+
+It is meant to address the following issues:
+
+* Conflicts with unspecified gem dependency versions.
+* Applications can have their own gem repositories.
+* Permissions for installing your own gems.
+* Ability to try gems out without installing into your global repository.
+* A Simple way to enable this.
+
+Running from your own gem repositories is fairly straight-forward, but 
+managing the necessary environment is a pain.  This utility will create a new
+environment which may be activated by the script `bin/activate` in your
+sandbox directory.
+
+Run the script with the following to enable your new environment:
+  
+  $ source bin/activate_sandbox
+
+When you want to leave the environment:
+  
+  $ deactivate_sandbox
+
+== NOTES:
+
+* It creates an environment that has its own installation directory for Gems.
+* It doesn't share gems with other sandbox environments.
+* It (optionally) doesn't use the globally installed gems either.
+* It will use a local to the sandbox .gemrc file
 
 == FEATURES/PROBLEMS:
 
-* FIX (list of features or problems)
+Activating your sandbox environment will change your HOME directory
+temporarily to the sandbox directory.  Other environment variables are set to
+enable this funtionality, so if you may experience odd behavior.  Everything
+should be reset when you deactivate the sandbox.
 
 == USAGE:
 

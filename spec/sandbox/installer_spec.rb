@@ -3,101 +3,101 @@ require File.dirname( __FILE__ ) + '/../spec_helper'
 
 describe Sandbox::Installer do
   
-  describe "when resolve_target called" do
-
-    before( :all ) do
-      @abs_dir = '/path/to/new'
-      @abs_target = @abs_dir + '/target'
-      @rel_target = 'target'
-      @deep_rel_dir = 'path/to/new'
-      @deep_rel_target = @deep_rel_dir + '/' + 'target'
-      @abs_deep_target = @abs_dir + '/' + @deep_rel_target
-    end
-    
-    before( :each ) do
-      @installer = Sandbox::Installer.new
-    end
-
-    describe "with relative path" do
-
-      it "should raise error when target exists" do
-        FileUtils.expects( :pwd ).returns( @abs_dir )
-        File.expects( :exists? ).with( @abs_target ).returns( true )
-        lambda { @installer.resolve_target( @rel_target ) }.should raise_error
-      end
-      
-      it "should raise error when parent of target is not a directory" do
-        FileUtils.expects( :pwd ).returns( @abs_dir )
-        # File.expects( :directory? ).with( @abs_dir ).returns( true )
-        File.expects( :exists? ).with( @abs_target ).returns( false )
-        File.expects( :exists? ).with( @abs_dir ).returns( true )
-        File.expects( :directory? ).with( @abs_dir ).returns( false )
-        lambda { @installer.resolve_target( @rel_target ) }.should raise_error
-      end
-
-      it "should raise error when parent of target is not writable" do
-        FileUtils.expects( :pwd ).returns( @abs_dir )
-        # File.expects( :directory? ).with( @abs_dir ).returns( true )
-        File.expects( :exists? ).with( @abs_target ).returns( false )
-        File.expects( :exists? ).with( @abs_dir ).returns( true )
-        File.expects( :directory? ).with( @abs_dir ).returns( true )
-        File.expects( :writable? ).with( @abs_dir ).returns( false )
-        lambda { @installer.resolve_target( @rel_target ) }.should raise_error
-      end
-
-      it "should raise error when point on path up to target is not writable" do
-        # File.expects( :directory? ).with( @abs_dir ).returns( true )
-        FileUtils.expects( :pwd ).returns( @abs_dir )
-        File.expects( :exists? ).with( @abs_deep_target ).returns( false )
-        File.expects( :exists? ).with( '/path/to/new/path/to/new' ).returns( false )
-        File.expects( :exists? ).with( '/path/to/new/path/to' ).returns( true )
-        File.expects( :directory? ).with( '/path/to/new/path/to' ).returns( true )
-        File.expects( :writable? ).with( '/path/to/new/path/to' ).returns( false )
-        lambda { @installer.resolve_target( @deep_rel_target ) }.should raise_error
-      end
-
-      it "should return the absolute path" do
-        FileUtils.expects( :pwd ).returns( @abs_dir )
-        File.expects( :exists? ).with( @abs_target ).returns( false )
-        File.expects( :exists? ).with( @abs_dir ).returns( true )
-        File.expects( :directory? ).with( @abs_dir ).returns( true )
-        File.expects( :writable? ).with( @abs_dir ).returns( true )
-        target = @installer.resolve_target( @rel_target )
-        target.should == @abs_target
-      end
-
-    end
-
-    describe "with absolute path" do
-
-      it "should raise error when target exists" do
-        File.expects( :exists? ).with( @abs_target ).returns( true )
-        lambda { @installer.resolve_target( @abs_target ) }.should raise_error
-      end
-
-      it "should raise error when point on path up to target is not writable" do
-        # File.expects( :directory? ).with( @abs_dir ).returns( true )
-        File.expects( :exists? ).with( @abs_target ).returns( false )
-        File.expects( :exists? ).with( @abs_dir ).returns( false )
-        File.expects( :exists? ).with( '/path/to' ).returns( false )
-        File.expects( :exists? ).with( '/path' ).returns( true )
-        File.expects( :directory? ).with( '/path' ).returns( true )
-        File.expects( :writable? ).with( '/path' ).returns( false )
-        lambda { @installer.resolve_target( @abs_target ) }.should raise_error
-      end
-
-      it "should return the absolute path" do
-        File.expects( :exists? ).with( @abs_target ).returns( false )
-        File.expects( :exists? ).with( @abs_dir ).returns( true )
-        File.expects( :directory? ).with( @abs_dir ).returns( true )
-        File.expects( :writable? ).with( @abs_dir ).returns( true )
-        target = @installer.resolve_target( @abs_target )
-        target.should == @abs_target
-      end
-
-    end
-
-  end
+  # describe "when resolve_target called" do
+  # 
+  #   before( :all ) do
+  #     @abs_dir = '/path/to/new'
+  #     @abs_target = @abs_dir + '/target'
+  #     @rel_target = 'target'
+  #     @deep_rel_dir = 'path/to/new'
+  #     @deep_rel_target = @deep_rel_dir + '/' + 'target'
+  #     @abs_deep_target = @abs_dir + '/' + @deep_rel_target
+  #   end
+  #   
+  #   before( :each ) do
+  #     @installer = Sandbox::Installer.new
+  #   end
+  # 
+  #   describe "with relative path" do
+  # 
+  #     it "should raise error when target exists" do
+  #       FileUtils.expects( :pwd ).returns( @abs_dir )
+  #       File.expects( :exists? ).with( @abs_target ).returns( true )
+  #       lambda { @installer.resolve_target( @rel_target ) }.should raise_error
+  #     end
+  #     
+  #     it "should raise error when parent of target is not a directory" do
+  #       FileUtils.expects( :pwd ).returns( @abs_dir )
+  #       # File.expects( :directory? ).with( @abs_dir ).returns( true )
+  #       File.expects( :exists? ).with( @abs_target ).returns( false )
+  #       File.expects( :exists? ).with( @abs_dir ).returns( true )
+  #       File.expects( :directory? ).with( @abs_dir ).returns( false )
+  #       lambda { @installer.resolve_target( @rel_target ) }.should raise_error
+  #     end
+  # 
+  #     it "should raise error when parent of target is not writable" do
+  #       FileUtils.expects( :pwd ).returns( @abs_dir )
+  #       # File.expects( :directory? ).with( @abs_dir ).returns( true )
+  #       File.expects( :exists? ).with( @abs_target ).returns( false )
+  #       File.expects( :exists? ).with( @abs_dir ).returns( true )
+  #       File.expects( :directory? ).with( @abs_dir ).returns( true )
+  #       File.expects( :writable? ).with( @abs_dir ).returns( false )
+  #       lambda { @installer.resolve_target( @rel_target ) }.should raise_error
+  #     end
+  # 
+  #     it "should raise error when point on path up to target is not writable" do
+  #       # File.expects( :directory? ).with( @abs_dir ).returns( true )
+  #       FileUtils.expects( :pwd ).returns( @abs_dir )
+  #       File.expects( :exists? ).with( @abs_deep_target ).returns( false )
+  #       File.expects( :exists? ).with( '/path/to/new/path/to/new' ).returns( false )
+  #       File.expects( :exists? ).with( '/path/to/new/path/to' ).returns( true )
+  #       File.expects( :directory? ).with( '/path/to/new/path/to' ).returns( true )
+  #       File.expects( :writable? ).with( '/path/to/new/path/to' ).returns( false )
+  #       lambda { @installer.resolve_target( @deep_rel_target ) }.should raise_error
+  #     end
+  # 
+  #     it "should return the absolute path" do
+  #       FileUtils.expects( :pwd ).returns( @abs_dir )
+  #       File.expects( :exists? ).with( @abs_target ).returns( false )
+  #       File.expects( :exists? ).with( @abs_dir ).returns( true )
+  #       File.expects( :directory? ).with( @abs_dir ).returns( true )
+  #       File.expects( :writable? ).with( @abs_dir ).returns( true )
+  #       target = @installer.resolve_target( @rel_target )
+  #       target.should == @abs_target
+  #     end
+  # 
+  #   end
+  # 
+  #   describe "with absolute path" do
+  # 
+  #     it "should raise error when target exists" do
+  #       File.expects( :exists? ).with( @abs_target ).returns( true )
+  #       lambda { @installer.resolve_target( @abs_target ) }.should raise_error
+  #     end
+  # 
+  #     it "should raise error when point on path up to target is not writable" do
+  #       # File.expects( :directory? ).with( @abs_dir ).returns( true )
+  #       File.expects( :exists? ).with( @abs_target ).returns( false )
+  #       File.expects( :exists? ).with( @abs_dir ).returns( false )
+  #       File.expects( :exists? ).with( '/path/to' ).returns( false )
+  #       File.expects( :exists? ).with( '/path' ).returns( true )
+  #       File.expects( :directory? ).with( '/path' ).returns( true )
+  #       File.expects( :writable? ).with( '/path' ).returns( false )
+  #       lambda { @installer.resolve_target( @abs_target ) }.should raise_error
+  #     end
+  # 
+  #     it "should return the absolute path" do
+  #       File.expects( :exists? ).with( @abs_target ).returns( false )
+  #       File.expects( :exists? ).with( @abs_dir ).returns( true )
+  #       File.expects( :directory? ).with( @abs_dir ).returns( true )
+  #       File.expects( :writable? ).with( @abs_dir ).returns( true )
+  #       target = @installer.resolve_target( @abs_target )
+  #       target.should == @abs_target
+  #     end
+  # 
+  #   end
+  # 
+  # end
   
 end
 

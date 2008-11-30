@@ -1,15 +1,19 @@
 
 require 'sandbox'
-# require 'sandbox/command_manager'
 
 module Sandbox  
   class CLI
+    
+    DEFAULTS = {
+      :gems => [ 'rake', ]
+    }
     
     ## CLASS METHODS
     class << self
       
       # invokes sandbox via command-line ARGV as the options
       def execute( args = ARGV )
+        verify_environment!
         parse( args ).execute!
       rescue Exception => error
         handle_error( error )
@@ -24,29 +28,31 @@ module Sandbox
         cli
       end
       
+      def verify_environment!
+        raise LoadedSandboxError if ENV[ 'SANDBOX' ]
+      end
+      
       # pretty error handling
       def handle_error( error )
         case error
           when Sandbox::Error
-            abort( error.message )
+            puts error.message
           when StandardError #, Timeout::Error
             message = [ "Error: #{error.message}" ]
             message.concat( error.backtrace.collect { |bt| "    #{bt}" } ) if Sandbox.really_verbose?
-            abort( message.join( "\n" ) )
+            puts message.join( "\n" )
           when Interrupt
-            abort( "Interrupted" )
+            puts "Interrupted"
         else
           raise error
         end
       end
+      
     end
     ## END CLASS METHODS
     
-    DEFAULTS = {
-      :gems => [ 'rake', ]
-    }
-    
     ## PUBLIC INSTANCE METHODS
+    public
     
     # The options for this execution.
     attr_reader :options
@@ -55,11 +61,10 @@ module Sandbox
     def initialize
       @options = DEFAULTS.dup
       @parser = nil
-      verify_environment!
     end
     
     
-    # get and run the command
+    # perform the sandbox creation
     def execute!
       targets = options.delete( :args )
       
@@ -90,7 +95,11 @@ module Sandbox
     end
     
     def parser
-      @parser ||= OptionParser.new do |o|
+      @parser ||= create_parser
+    end
+    
+    def create_parser
+      OptionParser.new do |o|
         o.set_summary_indent('  ')
         o.program_name = 'sandbox TARGET'
         o.define_head "Create virtual ruby/rubygems sandboxes."
@@ -107,7 +116,7 @@ module Sandbox
         o.on( '-v', '--verbose', 'Show more output. (multiple allowed)' ) { |f| Sandbox.increase_verbosity }
         o.on_tail( '-h', '--help', 'Show this help message and exit.' ) { puts o; exit }
         o.on_tail( '-H', '--long-help', 'Show the full description about the program' ) { puts long_help; exit }
-        o.on_tail( '-V', '--version', 'Display the program version and exit.' ) { puts o; exit }
+        o.on_tail( '-V', '--version', 'Display the program version and exit.' ) { puts Sandbox::Version::STRING; exit }
         o.separator ""
       end
     end
@@ -157,12 +166,6 @@ module Sandbox
       indent = output[/\A\s*/]
       output.strip.gsub(/^#{indent}/, "")
     end
-    # # Merge a set of command options with the set of default options
-    # # (without modifying the default option hash).
-    # def merge_options(new_options)
-    #   @options = @defaults.clone
-    #   new_options.each do |k,v| @options[k] = v end
-    # end
     
     ## END PUBLIC INSTANCE METHODS
     
@@ -170,12 +173,8 @@ module Sandbox
     ## PRIVATE INSTANCE METHODS
     private
     
-      def raise_parse_error( reason, args=[] )
+    def raise_parse_error( reason, args=[] )
         raise Sandbox::ParseError.new( reason, args )
-      end
-      
-      def verify_environment!
-        raise LoadedSandboxError if ENV[ 'SANDBOX' ]
       end
     
     ## END PRIVATE INSTANCE METHODS
