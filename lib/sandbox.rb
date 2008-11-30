@@ -23,12 +23,24 @@ module Sandbox
       @verbosity = verbosity - 1
     end
     
+    def config
+      return nil unless @config_loaded
+      @config
+    end
+    
+    def load_config( args={} )
+      @config = Sandbox::Config.new( args )
+      @config_loaded = true
+    end
+    
   end
   
 end
 
 require 'sandbox/version'
 require 'sandbox/errors'
+require 'sandbox/config'
+require 'sandbox/installer'
 # require 'sandbox/cli'
 require 'sandbox/command_manager'
 require 'sandbox/command'

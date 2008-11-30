@@ -14,6 +14,7 @@ require 'mocha'
 require 'spec'
 require 'stringio'
 require 'ostruct'
+require 'tempfile'
 
 require 'sandbox'
 

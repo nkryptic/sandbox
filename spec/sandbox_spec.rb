@@ -23,5 +23,16 @@ describe Sandbox do
     Sandbox.verbosity.should == -1
   end
   
+  it "should return nil for config when config is not loaded" do
+    Sandbox.config.should == nil
+  end
+  
+  it "should return config object for config when load_config called" do
+    cfg = mock()
+    Sandbox::Config.expects( :new ).with( {} ).returns( cfg )
+    Sandbox.load_config
+    Sandbox.config.should == cfg
+  end
+  
 end
 

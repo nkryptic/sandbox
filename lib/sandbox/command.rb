@@ -12,6 +12,7 @@ module Sandbox
           [ ["-h", '--help', 'Show help on this command'], Proc.new { |val,opts| opts[ :help ] = true } ],
           [ ["-v", '--verbose', 'Show more output'], Proc.new { |val,opts| Sandbox.increase_verbosity } ],
           [ ["-q", '--quiet', 'Show less output'], Proc.new { |val,opts| Sandbox.decrease_verbosity } ],
+          [ ["-c", '--config FILE', 'Use an alternate configuration file'], Proc.new { |val,opts| opts[ :config_file ] = val } ],
         ]
       end
     end
@@ -33,18 +34,19 @@ module Sandbox
     attr_accessor :summary
     
     ## PUBLIC INSTANCE METHODS
-    def initialize( name, summary=nil, defaults={} )
+    def initialize( name, summary=nil, defs={} )
       @name = name
       @summary = summary
       @cli_string = "sandbox #{name}"
-      @defaults = defaults
-      @options = defaults.dup
+      @defaults = defs
+      @options = @defaults.dup
       # @option_groups = Hash.new { |h,k| h[k] = [] }
       @parser = nil
     end
     
     def run( args )
       process_options!( args )
+      Sandbox.load_config( options )
       if options[ :help ]
         show_help
       else

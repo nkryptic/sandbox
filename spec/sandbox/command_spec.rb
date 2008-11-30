@@ -135,6 +135,13 @@ describe Sandbox::Command do
         processor( [ '-x' ] ).
             should raise_error( Sandbox::ParseError ) { |error| error.message.should =~ /-x/ }
       end
+      
+      it "should load configuration when uses_config is set" do
+        @cmd.instance_eval { @uses_config = true }
+        @cmd.stubs( :execute! )
+        Sandbox.expects( :load_config )
+        process( [] )
+      end
 
     end
 
@@ -171,14 +178,14 @@ describe Sandbox::Command do
             Sandbox.verbosity.should == 1
           end
         end
-
+ 
         it "should set verbosity option properly for argument '-vv'" do
           Sandbox.verbosity.should == 0
           process( ['-vv'] )
           # @cmd.options[ :verbosity ].should == 2
           Sandbox.verbosity.should == 2
         end
-
+ 
         [ '-q', '--quiet' ].each do |arg|
           it "should set verbosity option properly for argument '#{arg}'" do
             Sandbox.verbosity.should == 0
@@ -187,7 +194,7 @@ describe Sandbox::Command do
             Sandbox.verbosity.should == -1
           end
         end
-
+ 
         it "should set verbosity option properly for argument '-qq'" do
           Sandbox.verbosity.should == 0
           process( ['-qq'] )
@@ -197,8 +204,9 @@ describe Sandbox::Command do
 
         it "should save non-switch args into options" do
           args = [ '-v', '/path/to/somewhere' ]
+          post_args = [ args[1] ]
           process( args )
-          @cmd.options[ :args ].should == args
+          @cmd.options[ :args ].should == post_args
         end
 
       end

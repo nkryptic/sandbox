@@ -22,44 +22,21 @@ class Sandbox::Commands::InitCommand < Sandbox::Command
       elsif options[ :args ].size > 1
         raise Sandbox::Error.new( 'multiple targets specified - only provide one' )
       else
-        arg = options[ :args ].first
-        
-        
-        # target = get_target( arg )
-        # raise Sandbox::SandboxError.new( 'target directory exists' )
-        
-        # if File.exists?( arg )
-        #   raise Sandbox::SandboxError.new( 'target directory exists' )
-        # end
-        # target = FileUtils.pwd + '/' + arg
-        # FileUtils.mkdir_p( target )
+        target = options[ :args ].first
+        installer = Sandbox::Installer.new( target )
+        installer.populate
       end
     end
     
-    def resolve_target( path )
-      # abs = path and path[0] == '/'
-      unless path.index( '/' ) == 0
-        path = File.join( FileUtils.pwd, path )
-      end
-      if File.exists?( path )
-        raise
-      end
-      base = path
-      while base = File.dirname( base )
-        if File.directory?( base ) and File.writable?( base )
-          break
-        elsif File.directory?( base )
-          raise
-        elsif base == '/'
-          raise
-        end
-      end
-      return path
+    def parser_opts
+      [
+        [ ["-I", '--install-type TYPE', [:virtual,:rubygems,:full], 'Installation type (virtual, rubygems, full)', 'virtual: create sandbox with system ruby and rubygems', 'rubygems: create sandbox with new rubygems and system ruby', 'full: create sandbox with new ruby and rubygems'], Proc.new { |val,opts| opts[ :install_type ] = val } ],
+      ]
     end
     
-    # def parser_opts
-    #   []
-    # end
+    def usage
+      "#{cli_string} PATH"
+    end
   
   ## END PUBLIC INSTANCE METHODS
   

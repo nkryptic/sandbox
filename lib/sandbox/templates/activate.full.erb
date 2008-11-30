@@ -1,0 +1,72 @@
+# This file must be used with "source bin/activate" *from bash*
+# you cannot run it directly
+
+deactivate () {
+    if [ -n "$_OLD_SANDBOX_PATH" ] ; then
+        PATH="$_OLD_SANDBOX_PATH"
+        export PATH
+        unset _OLD_SANDBOX_PATH
+    fi
+
+    # This should detect bash and zsh, which have a hash command that must
+    # be called to get it to forget past commands.  Without forgetting
+    # past commands the $PATH changes we made may not be respected
+    if [ -n "$BASH" -o -n "$ZSH_VERSION" ] ; then
+        hash -r
+    fi
+
+    if [ -n "$_OLD_SANDBOX_PS1" ] ; then
+        PS1="$_OLD_SANDBOX_PS1"
+        export PS1
+        unset _OLD_SANDBOX_PS1
+    fi
+
+    unset VIRTUAL_ENV
+    if [ ! "$1" = "nondestructive" ] ; then
+    # Self destruct!
+        unset deactivate
+    fi
+}
+
+# unset irrelavent variables
+deactivate nondestructive
+
+SANDBOX_ENV="<%= @target_path %>"
+export SANDBOX_ENV
+
+_OLD_SANDBOX_PATH="$PATH"
+PATH="$SANDBOX_ENV/bin:$PATH"
+export PATH
+
+_OLD_SANDBOX_HOME="$HOME"
+HOME="$SANDBOX_ENV"
+export HOME
+
+_OLD_SANDBOX_GEM_HOME="$GEM_HOME"
+GEM_HOME="$SANDBOX_ENV/rubygems"
+export GEM_HOME
+
+_OLD_SANDBOX_GEM_PATH="$GEM_PATH"
+GEM_PATH="$GEM_HOME"
+export GEM_PATH
+
+_OLD_SANDBOX_RUBYLIB="$RUBYLIB"
+RUBYLIB="$SANDBOX_ENV/lib/rubyinstall/lib"
+export RUBYLIB
+
+_OLD_SANDBOX_PS1="$PS1"
+if [ "`basename \"$VIRTUAL_ENV\"`" = "__" ] ; then
+    # special case for Aspen magic directories
+    # see http://www.zetadev.com/software/aspen/
+    PS1="[sandbox:`basename \`dirname \"$SANDBOX_ENV\"\``] $PS1"
+else
+    PS1="(sandbox:`basename \"$SANDBOX_ENV\"`)$PS1"
+fi
+export PS1
+
+# This should detect bash and zsh, which have a hash command that must
+# be called to get it to forget past commands.  Without forgetting
+# past commands the $PATH changes we made may not be respected
+if [ -n "$BASH" -o -n "$ZSH_VERSION" ] ; then
+    hash -r
+fi
