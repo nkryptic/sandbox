@@ -51,14 +51,43 @@ should be reset when you deactivate the sandbox.
 
 == USAGE:
 
-Create a new sandbox:
+Create a new sandbox (rake gem installed by default):
   $ cd ~/ruby-projects
   $ sandbox my-new-sandbox
-      creating new sandbox in /home/nkryptic/ruby-projects/my-new-sandbox
+
+Create a new sandbox with output (rake gem installed by default):
+  $ cd ~/ruby-projects
+  $ sandbox my-new-sandbox -v
+  creating new sandbox in /home/nkryptic/ruby-projects/my-new-sandbox
+  installing gems:
+    gem: rake
+
+Create a new sandbox with no gems installed:
+  $ cd ~/ruby-projects
+  $ sandbox my-new-sandbox -n
+  creating new sandbox in /home/nkryptic/ruby-projects/my-new-sandbox
+  installing gems:
+
+Create a new sandbox with specific gems:
+  $ cd ~/ruby-projects
+  $ sandbox my-new-sandbox -g rake,rails
+  creating new sandbox in /home/nkryptic/ruby-projects/my-new-sandbox
+  installing gems:
+    gem: rake
+    gem: rails
+    gem: rspec
+
+== FUTURE PLANS:
+
+I hope to expand the full version branch to allow for installing both rubygems
+and ruby as part of the sandbox.  This would enable experimentation with
+different versions of both and exclude the requirement on needing rubygems in
+the first place.
 
 == REQUIREMENTS:
 
-* FIX (list of requirements)
+* ruby
+* rubygems (currently, until full version complete)
 
 == INSTALL:
 

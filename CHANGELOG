@@ -1,4 +1,9 @@
 
+v0.2.0 Functional basic version.
+  Requires rubygems and only installs environment (with optional gem installs).
+
+v0.1.2 Branched fullversion from master.
+  Full version will include ruby and rubygems installs.
 
 v0.1.1 Adding rspec and cucumber
  

@@ -1,8 +1,14 @@
 
-* install gems for user
-  * specified on command line
-  * default in config
-* user config step
-    ~/.sandbox/config
-    list of gems to install
-    change install version choices
+* allow gem versions to be specified when installing
+* better documentation
+  * of the codebase
+* more specs
+  * why not try for 100% coverage
+* improve ui output
+  * use verbosity level
+  * include more messages about status
+  * move to ui class?
+* user config
+  * list of gems to install
+      ~/.sandbox/config
+    
