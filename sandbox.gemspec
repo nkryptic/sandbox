@@ -2,17 +2,17 @@
 
 Gem::Specification.new do |s|
   s.name = %q{sandbox}
-  s.version = "0.1.2"
+  s.version = "0.2.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 1.2") if s.respond_to? :required_rubygems_version=
   s.authors = ["Jacob Radford"]
-  s.date = %q{2008-11-27}
+  s.date = %q{2008-12-01}
   s.default_executable = %q{sandbox}
   s.description = %q{Create virtual ruby/rubygems sandboxes.}
   s.email = %q{nkryptic@gmail.com}
   s.executables = ["sandbox"]
-  s.extra_rdoc_files = ["CHANGELOG", "TODO", "README.rdoc", "tasks/rspec.rake", "tasks/cucumber.rake", "tasks/gem.rake", "tasks/dcov.rake", "lib/sandbox.rb", "lib/sandbox/command_manager.rb", "lib/sandbox/cli.rb", "lib/sandbox/version.rb", "lib/sandbox/command.rb", "lib/sandbox/commands/help.rb", "lib/sandbox/commands/init.rb", "bin/sandbox"]
-  s.files = ["sandbox.gemspec", "CHANGELOG", "TODO", "spec/sandbox/cli_spec.rb", "spec/sandbox/command_manager_spec.rb", "spec/sandbox/command_spec.rb", "spec/sandbox/commands/init_spec.rb", "spec/sandbox/commands/help_spec.rb", "spec/sandbox_spec.rb", "spec/spec.opts", "spec/spec_helper.rb", "Manifest", "features/steps/common.rb", "features/steps/env.rb", "features/development.feature", "README.rdoc", "tasks/rspec.rake", "tasks/cucumber.rake", "tasks/gem.rake", "tasks/dcov.rake", "Rakefile", "lib/sandbox.rb", "lib/sandbox/command_manager.rb", "lib/sandbox/cli.rb", "lib/sandbox/version.rb", "lib/sandbox/command.rb", "lib/sandbox/commands/help.rb", "lib/sandbox/commands/init.rb", "bin/sandbox"]
+  s.extra_rdoc_files = ["CHANGELOG", "TODO", "README.rdoc", "tasks/rspec.rake", "tasks/cucumber.rake", "tasks/gem.rake", "tasks/dcov.rake", "lib/sandbox.rb", "lib/sandbox/installer.rb", "lib/sandbox/cli.rb", "lib/sandbox/templates/activate_sandbox.erb", "lib/sandbox/version.rb", "lib/sandbox/errors.rb", "bin/sandbox"]
+  s.files = ["sandbox.gemspec", "CHANGELOG", "TODO", "spec/sandbox/cli_spec.rb", "spec/sandbox/installer_spec.rb", "spec/sandbox_spec.rb", "spec/spec.opts", "spec/spec_helper.rb", "Manifest", "features/steps/common.rb", "features/steps/env.rb", "features/development.feature", "README.rdoc", "tasks/rspec.rake", "tasks/cucumber.rake", "tasks/gem.rake", "tasks/dcov.rake", "Rakefile", "lib/sandbox.rb", "lib/sandbox/installer.rb", "lib/sandbox/cli.rb", "lib/sandbox/templates/activate_sandbox.erb", "lib/sandbox/version.rb", "lib/sandbox/errors.rb", "bin/sandbox"]
   s.has_rdoc = true
   s.homepage = %q{http://github.com/nkryptic/sandbox}
   s.rdoc_options = ["--line-numbers", "--inline-source", "--title", "Sandbox", "--main", "README.rdoc"]

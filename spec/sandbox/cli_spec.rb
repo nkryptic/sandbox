@@ -14,7 +14,6 @@ describe Sandbox::CLI do
   end
   
   describe "calling execute" do
-    
     before( :each ) do
       @instance = stub_everything()
     end
@@ -46,7 +45,6 @@ describe Sandbox::CLI do
       Sandbox::CLI.expects( :parse ).returns( @instance )
       Sandbox::CLI.execute
     end
-    
   end
   
   describe "a new instance" do
@@ -60,22 +58,18 @@ describe Sandbox::CLI do
     end
     
     describe "instance calling parse_args!" do
-      
       def processor( *args ); lambda { @cli.parse_args!( args ) }; end
       def process( *args ); processor( *args ).call; end
   
       describe "using NO arguments" do
-  
         it "should use raise nothing" do
           process()
           @cli.options[ :original_args ].should == []
           @cli.options[ :args ].should == []
         end
-  
       end
   
       describe "using VALID arguments" do
-  
         [ '-V', '--version' ].each do |arg|
           it "should print the version for switch '#{arg}'" do
             @cli.expects( :puts ).with( Sandbox::Version::STRING )
@@ -168,18 +162,14 @@ describe Sandbox::CLI do
       end
   
       describe "using INVALID arguments" do
-        
         it "should exit with message for invalid switch '-x'" do
           processor( '-x' ).
               should raise_error( Sandbox::ParseError ) { |error| error.message.should =~ /-x\b/ }
         end
-        
       end
-  
     end
     
     describe "instance calling execute!" do
-      
       def processor; lambda { @cli.execute! }; end
       def process; processor.call; end
       

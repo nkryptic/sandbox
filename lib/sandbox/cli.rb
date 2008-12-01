@@ -1,4 +1,5 @@
 
+require 'optparse'
 require 'sandbox'
 
 module Sandbox  

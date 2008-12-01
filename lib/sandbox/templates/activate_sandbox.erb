@@ -9,10 +9,10 @@ deactivate_sandbox () {
         unset _OLD_SANDBOX_PATH
     fi
     
-    if [ -n "$_OLD_SANDBOX_PATH" ] ; then
-        PATH="$_OLD_SANDBOX_PATH"
-        export PATH
-        unset _OLD_SANDBOX_PATH
+    if [ -n "$_OLD_SANDBOX_HOME" ] ; then
+        HOME="$_OLD_SANDBOX_HOME"
+        export HOME
+        unset _OLD_SANDBOX_HOME
     fi
 
     # This should detect bash and zsh, which have a hash command that must
@@ -39,18 +39,22 @@ deactivate_sandbox () {
         export PS1
         unset _OLD_SANDBOX_PS1
     fi
-
+    
+    # unset again, in case they were missed because they were blank
+    unset _OLD_SANDBOX_GEM_HOME
+    unset _OLD_SANDBOX_GEM_PATH
+    
     unset SANDBOX_ENV
     if [ ! "$1" = "nondestructive" ] ; then
-    # Self destruct!
-        unset deactivate
+        # Self destruct!
+        unset deactivate_sandbox
     fi
 }
 
 # unset irrelavent variables
-deactivate nondestructive
+deactivate_sandbox nondestructive
 
-SANDBOX_ENV="<%= @target_path %>"
+SANDBOX_ENV="<%= target %>"
 export SANDBOX_ENV
 
 _OLD_SANDBOX_PATH="$PATH"

@@ -2,7 +2,6 @@
 require File.dirname( __FILE__ ) + '/spec_helper.rb'
 
 describe Sandbox do
-  
   before( :each ) do
     Sandbox.instance_eval { instance_variables.each { |v| remove_instance_variable v } }
   end
@@ -22,6 +21,5 @@ describe Sandbox do
     Sandbox.decrease_verbosity
     Sandbox.verbosity.should == -1
   end
-  
 end
 

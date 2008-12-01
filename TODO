@@ -1,11 +1,7 @@
-* build step
-  * create sandbox
-      mkdir /path/to/sandbox/
-      mkdir /path/to/sandbox/rubygems
-      mkdir /path/to/sandbox/rubygems/bin
-      ln -s /path/to/sandbox/rubygems/bin /path/to/sandbox/bin
-  * install needed activation script
-      /path/to/sandbox/bin/activate_sandbox
+
+* install gems for user
+  * specified on command line
+  * default in config
 * user config step
     ~/.sandbox/config
     list of gems to install
