@@ -1,4 +1,23 @@
 
+* hardlink bin directory instead of symlink
+* put in timeout when installing gems
+* check for network connection
+* perhaps look in installed rubygems cache first
+* make rubygems dependency fail immediately and gracefully?
+  * in bin/sandbox?
+* replace backticks for gem installs with open4 library?
+* allow for sandbox to be rerun against existing sandbox to update it?
+* test against various OS platforms
+  * BSD
+  * OSX
+  * Gentoo
+  * Debian/Ubuntu
+  * ?
+* test against other shells
+  * csh
+  * zsh
+* test against other ruby versions?
+  * jruby
 * allow gem versions to be specified when installing
 * better documentation
   * of the codebase
@@ -9,6 +28,31 @@
   * include more messages about status
   * move to ui class?
 * user config
+  * set list of ruby variants to query?
   * list of gems to install
       ~/.sandbox/config
-    
+* allow for install of ruby/rubygems
+  * how
+    * select dynamically?
+    * preset in config file?
+  * MRI, JRuby, Rubinius?
+    * each would have their own install method
+    * rubygems install would vary then
+* perhaps the following could be added to the activate script???
+    function not_sourced() {
+      ## ZSH source check
+      test -n "$ZSH_NAME" -a "$HISTCMD" = "0" && return 0
+      ## BASH source check
+      test "`basename $1 2>/dev/null`" = "activate_sandbox" && return 0
+      ## script was not sourced
+      return 1
+    }
+    function exit_with_warning() {
+      echo "You must source this script (ie. source bin/activate_sandbox)"
+      exit 1
+    }
+    not_sourced $0 && exit_with_warning
+    unset not_sourced
+    unset exit_with_warning
+
+

@@ -80,7 +80,7 @@ the first place.
 == REQUIREMENTS:
 
 * ruby
-* rubygems (currently, until full version complete)
+* rubygems
 
 == INSTALL:
 
