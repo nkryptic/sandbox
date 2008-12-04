@@ -47,6 +47,32 @@ describe Sandbox::CLI do
     end
   end
   
+  describe "handling errors" do
+    it "should just print Sandbox::Error message" do
+      err = Sandbox::Error.new( "spec test msg" )
+      Sandbox::CLI.expects( :puts ).once.with( regexp_matches( /^Sandbox error: spec test msg/ ) )
+      Sandbox::CLI.handle_error( err )
+    end
+    
+    it "should just print wrapped StandardError message" do
+      err = StandardError.new( "spec test msg" )
+      Sandbox::CLI.expects( :puts ).once.with( regexp_matches( /^Error: spec test msg/ ) )
+      Sandbox::CLI.handle_error( err )
+    end
+    
+    it "should have simple message for Interrupt" do
+      err = Interrupt.new( "spec test msg" )
+      Sandbox::CLI.expects( :puts ).once.with( 'Interrupted' )
+      Sandbox::CLI.handle_error( err )
+    end
+    
+    it "should reraise other errors" do
+      err = NotImplementedError.new( 'you should have implemented it, dummy' )
+      Sandbox::CLI.expects( :raise ).once.with( err )
+      Sandbox::CLI.handle_error( err )
+    end
+  end
+  
   describe "a new instance" do
     
     before( :each ) do
@@ -191,6 +217,16 @@ describe Sandbox::CLI do
         process
       end
       
+    end
+    
+    describe "instance calling long_help" do
+      it "should return a long descriptive string" do
+        @cli.long_help.split( "\n" ).size.should be > 20
+        @cli.long_help.should =~ /activate_sandbox/
+        @cli.long_help.should =~ /deactivate_sandbox/
+        @cli.long_help.should =~ /NOTES:/
+        @cli.long_help.should =~ /WARNINGS:/
+      end
     end
     
   end

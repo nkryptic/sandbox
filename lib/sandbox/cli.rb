@@ -122,9 +122,9 @@ module Sandbox
       end
     end
     
-    def show_help
-      puts parser
-    end
+    # def show_help
+    #   puts parser
+    # end
     
     def long_help
       unindent( <<-HELP )
@@ -140,14 +140,14 @@ module Sandbox
         
         Running from your own gem repositories is fairly straight-forward, but 
         managing the necessary environment is a pain.  This utility will create a new
-        environment which may be activated by the script `bin/activate` in your
-        sandbox directory.
+        environment which may be activated by the script `bin/activate_sandbox` in
+        your sandbox directory.
         
         Run the script with the following to enable your new environment:
-          $ source bin/activate
+          $ source bin/activate_sandbox
         
         When you want to leave the environment:
-          $ deactivate
+          $ deactivate_sandbox
         
         NOTES:
         1. It creates an environment that has its own installation directory for Gems.

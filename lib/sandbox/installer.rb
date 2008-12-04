@@ -99,10 +99,10 @@ module Sandbox
     end
     
     def restore_sandbox_env
-      ENV.update( @old_env )
-      # ENV[ 'HOME' ]     = @old_env[ 'HOME' ]
-      # ENV[ 'GEM_HOME' ] = @old_env[ 'GEM_HOME' ]
-      # ENV[ 'GEM_PATH' ] = @old_env[ 'GEM_PATH' ]
+      # ENV.update( @old_env )
+      ENV[ 'HOME' ]     = @old_env[ 'HOME' ]
+      ENV[ 'GEM_HOME' ] = @old_env[ 'GEM_HOME' ]
+      ENV[ 'GEM_PATH' ] = @old_env[ 'GEM_PATH' ]
     end
     
     def resolve_target( path )
@@ -117,7 +117,7 @@ module Sandbox
         if check_path!( base )
           break
         elsif base == '/'
-          break
+          raise "something is seriously wrong; we should never get here"
         end
       end
       return path

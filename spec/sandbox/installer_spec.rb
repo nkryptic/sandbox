@@ -130,6 +130,12 @@ describe Sandbox::Installer, "(mocked)" do
         @installer.expects( :check_path! ).with( '/absolute' ).returns( true )
         @installer.resolve_target( @path ).should == @path
       end
+      
+      it "should have emergency safeguard for dirname on root" do
+        @installer.stubs( :fix_path ).returns( '/absolute' )
+        @installer.expects( :check_path! ).with( '/' ).returns( false )
+        lambda { @installer.resolve_target( '/absolute' ) }.should raise_error( RuntimeError )
+      end
     end
 
     # check_path!( path )
@@ -178,6 +184,52 @@ describe Sandbox::Installer, "(mocked)" do
         FileUtils.expects( :pwd ).returns( abs_path )
         @installer = Sandbox::Installer.new
         @installer.fix_path( path ).should == abs_path + '/' + path
+      end
+    end
+    
+    # shell_out( cmd )
+    describe "when shell_out called" do
+      it "should record true when successful" do
+        @installer = Sandbox::Installer.new
+        result = @installer.shell_out( '/bin/true' )
+        result.first.should be_true
+      end
+      
+      it "should record false when unsuccessful" do
+        @installer = Sandbox::Installer.new
+        result = @installer.shell_out( '/bin/false' )
+        result.first.should_not be_true
+      end
+      
+      it "should record std output" do
+        @installer = Sandbox::Installer.new
+        result = @installer.shell_out( 'ls -d /' )
+        result.last.chomp.should == '/'
+      end
+      
+      it "should ignore std error" do
+        @installer = Sandbox::Installer.new
+        result = @installer.shell_out( 'ls -d / 1>&2' )
+        result.last.chomp.should == ''
+      end
+    end
+    
+    describe "setup and restore sandbox env called" do
+      it "should set and restore the environment" do
+        orig_home = ENV[ 'HOME' ]
+        orig_gem_home = ENV[ 'GEM_HOME' ]
+        orig_gem_path = ENV[ 'GEM_PATH' ]
+        @installer = Sandbox::Installer.new
+        @installer.stubs( :target ).returns( 'dummypath' )
+        
+        @installer.setup_sandbox_env
+        ENV[ 'HOME' ].should == 'dummypath'
+        ENV[ 'GEM_HOME' ].should == 'dummypath/rubygems'
+        ENV[ 'GEM_PATH' ].should == 'dummypath/rubygems'
+        @installer.restore_sandbox_env
+        ENV[ 'HOME' ].should == orig_home
+        ENV[ 'GEM_HOME' ].should == orig_gem_home
+        ENV[ 'GEM_PATH' ].should == orig_gem_path
       end
     end
   end

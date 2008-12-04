@@ -21,6 +21,7 @@ module Sandbox
     
     def initialize( msg=nil )
       msg ||= "You cannot run sandbox from a loaded sandbox environment"
+      super msg
     end
     
   end
