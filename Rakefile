@@ -15,9 +15,9 @@ begin
     p.email                     = "nkryptic@gmail.com"
     p.ignore_pattern            = [ "tmp/*", "script/*" ]
     p.development_dependencies  = [
-                                    'echoe ~> 3.0',
-                                    'rspec ~> 1.1.0',
-                                    'mocha ~> 0.9',
+                                    # 'echoe ~> 3.0',
+                                    # 'rspec ~> 1.1.0',
+                                    # 'mocha ~> 0.9',
                                   ]
     # p.dependencies = ['ParseTree >=2.1.1', 'ruby2ruby >=1.1.8']
   end
