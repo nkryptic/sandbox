@@ -2,11 +2,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{sandbox}
-  s.version = "0.2.1"
+  s.version = "0.2.2"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 1.2") if s.respond_to? :required_rubygems_version=
   s.authors = ["Jacob Radford"]
-  s.date = %q{2008-12-05}
+  s.date = %q{2008-12-06}
   s.default_executable = %q{sandbox}
   s.description = %q{Create virtual ruby/rubygems sandboxes.}
   s.email = %q{nkryptic@gmail.com}
