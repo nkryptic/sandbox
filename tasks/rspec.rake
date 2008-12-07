@@ -9,13 +9,24 @@ begin
   end
 
   namespace :spec do
-    desc "Run all specs in spec directory with RCov"
-    Spec::Rake::SpecTask.new( :rcov ) do |t|
-      t.spec_opts = [ '--options', "spec/spec.opts" ]
-      t.spec_files = FileList[ 'spec/**/*_spec.rb' ]
-      t.rcov = true
-      # t.rcov_opts = [ '--exclude', "spec/*" ]
-      t.rcov_opts = [ '--exclude', "spec" ]
+    begin
+      require 'rcov'
+      
+      desc "Run all specs in spec directory with RCov"
+      Spec::Rake::SpecTask.new( :rcov ) do |t|
+        t.spec_opts = [ '--options', "spec/spec.opts" ]
+        t.spec_files = FileList[ 'spec/**/*_spec.rb' ]
+        t.rcov = true
+        # t.rcov_opts = [ '--exclude', "spec/*" ]
+        t.rcov_opts = [ '--exclude', "spec" ]
+      end
+      
+    rescue LoadError
+      puts <<-EOS
+      To use rcov for testing you must install rcov gem:
+        gem install rcov
+
+    EOS
     end
 
     desc "Print Specdoc for all specs in spec directory"
@@ -40,7 +51,8 @@ begin
   
 rescue LoadError
   puts <<-EOS
-To use rspec for testing you must install rspec gem:
+  To use rspec for testing you must install rspec gem:
     gem install rspec
+
 EOS
 end

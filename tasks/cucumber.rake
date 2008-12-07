@@ -12,7 +12,8 @@ begin
   end
 rescue LoadError
   puts <<-EOS
-To use cucumber for testing you must install cucumber gem:
+  To use cucumber for testing you must install cucumber gem:
     gem install cucumber
+
 EOS
 end

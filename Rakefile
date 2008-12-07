@@ -14,17 +14,39 @@ begin
     p.author                    = "Jacob Radford"
     p.email                     = "nkryptic@gmail.com"
     p.ignore_pattern            = [ "tmp/*", "script/*" ]
+    p.rdoc_pattern              = /^(lib|bin|ext).*(\.rb)$|^README|^CHANGELOG|^TODO|^LICENSE|^COPYING$/
+    p.runtime_dependencies      = []
     p.development_dependencies  = [
-                                    # 'echoe ~> 3.0',
-                                    # 'rspec ~> 1.1.0',
-                                    # 'mocha ~> 0.9',
+                                    # 'echoe    ~>3.0',
+                                    # 'dcov     ~>0.2',
+                                    # 'rcov     ~>0.8',
+                                    # 'rspec    ~>1.1.0',
+                                    # 'cucumber ~>0.1.0',
+                                    # 'mocha    ~>0.9',
                                   ]
+    # Version Specification
+    # 3 and up,         ">= 3"
+    # 3.y.z,            "~> 3.0"
+    # 3.0.z,            "~> 3.0.0"
+    # 3.5.z to <4.0,    "~> 3.5"
+    # 3.5.z to <3.6,    "~> 3.5.0"
+    
     # p.dependencies = ['ParseTree >=2.1.1', 'ruby2ruby >=1.1.8']
   end
   
+  desc "Create this gem's .gemspec file"
+  task :gemspec do
+    Rake::Task[ 'build_gemspec' ].invoke
+  end
+  
 rescue LoadError => boom
-  puts "You are missing a dependency required for meta-operations on this gem."
-  puts "#{boom.to_s.capitalize}."
+  puts <<-EOS
+  You are missing a dependency required for meta-operations on this gem. Try:
+    gem install echoe
+
+EOS
+  # puts "You are missing a dependency required for meta-operations on this gem."
+  # puts "#{boom.to_s.capitalize}."
 end
 
 Dir[ "#{File.dirname(__FILE__)}/tasks/*.rake" ].sort.each { |ext| load ext }

@@ -27,8 +27,9 @@ begin
   
 rescue LoadError
   puts <<-EOS
-To generate documentation coverage with dcov you must install dcov gem:
+  To generate documentation coverage with dcov you must install dcov gem:
     gem install dcov
+
 EOS
 end
 
