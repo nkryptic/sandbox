@@ -1,6 +1,6 @@
 require 'rubygems'
 require 'rake'
- 
+
 require 'lib/sandbox' unless defined? Sandbox
  
 begin

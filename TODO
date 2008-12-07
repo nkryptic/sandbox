@@ -1,7 +1,4 @@
 TODO: fix dependencies in rake files
-TODO: add 'gem: --no-ri --no-rdoc' to .gemrc in new sandbox
-TODO: do 'gem sources -a http://gems.github.com'
-TODO: 0 gems initially to be installed
 TODO: put in timeout when installing gems
 TODO: check for network connection
 TODO: perhaps look in installed rubygems cache first
@@ -28,7 +25,6 @@ TODO: better documentation
 TODO: improve ui output
       * use verbosity level
       * include more messages about status
-      * move to ui class?
 TODO: user config
       * set list of ruby variants to query?
       * list of gems to install

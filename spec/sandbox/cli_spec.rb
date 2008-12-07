@@ -50,19 +50,19 @@ describe Sandbox::CLI do
   describe "handling errors" do
     it "should just print Sandbox::Error message" do
       err = Sandbox::Error.new( "spec test msg" )
-      Sandbox::CLI.expects( :puts ).once.with( regexp_matches( /^Sandbox error: spec test msg/ ) )
+      Sandbox::CLI.expects( :tell_unless_really_quiet ).once.with( regexp_matches( /^Sandbox error: spec test msg/ ) )
       Sandbox::CLI.handle_error( err )
     end
     
     it "should just print wrapped StandardError message" do
       err = StandardError.new( "spec test msg" )
-      Sandbox::CLI.expects( :puts ).once.with( regexp_matches( /^Error: spec test msg/ ) )
+      Sandbox::CLI.expects( :tell_unless_really_quiet ).once.with( regexp_matches( /^Error: spec test msg/ ) )
       Sandbox::CLI.handle_error( err )
     end
     
     it "should have simple message for Interrupt" do
       err = Interrupt.new( "spec test msg" )
-      Sandbox::CLI.expects( :puts ).once.with( 'Interrupted' )
+      Sandbox::CLI.expects( :tell_unless_really_quiet ).once.with( 'Interrupted' )
       Sandbox::CLI.handle_error( err )
     end
     
@@ -79,8 +79,8 @@ describe Sandbox::CLI do
       @cli = Sandbox::CLI.new
     end
     
-    it "should have default 'gems to install'" do
-      @cli.options[ :gems ] = [ 'rake' ]
+    it "should have no default 'gems to install'" do
+      @cli.options[ :gems ].should == []
     end
     
     describe "instance calling parse_args!" do
@@ -98,7 +98,7 @@ describe Sandbox::CLI do
       describe "using VALID arguments" do
         [ '-V', '--version' ].each do |arg|
           it "should print the version for switch '#{arg}'" do
-            @cli.expects( :puts ).with( Sandbox::Version::STRING )
+            @cli.expects( :tell_unless_really_quiet ).with( Sandbox::Version::STRING )
             processor( arg ).should raise_error( SystemExit ) { |error| error.status.should == 0 }
           end
         end
@@ -106,7 +106,7 @@ describe Sandbox::CLI do
         [ '-V', '--version' ].each do |arg|
           it "should ignore additional arguments after '#{arg}'" do
             # @cli.stubs(:puts)
-            @cli.expects( :puts ).with( Sandbox::Version::STRING ).times(2)
+            @cli.expects( :tell_unless_really_quiet ).with( Sandbox::Version::STRING ).times(2)
             processor( arg, '-x' ).should raise_error( SystemExit ) { |error| error.status.should == 0 }
             processor( arg, 'unknown' ).should raise_error( SystemExit ) { |error| error.status.should == 0 }
           end
@@ -114,14 +114,14 @@ describe Sandbox::CLI do
           
         [ '-h', '--help' ].each do |arg|
           it "should show help for '#{arg}'" do
-            @cli.expects( :puts ).with( instance_of( OptionParser ) )
+            @cli.expects( :tell_unless_really_quiet ).with( instance_of( OptionParser ) )
             processor( arg ).should raise_error( SystemExit ) { |error| error.status.should == 0 }
           end
         end
           
         [ '-h', '--help' ].each do |arg|
           it "should ignore additional arguments after '#{arg}'" do
-            @cli.expects( :puts ).with( instance_of( OptionParser ) ).times(2)
+            @cli.expects( :tell_unless_really_quiet ).with( instance_of( OptionParser ) ).times(2)
             processor( arg, '-x' ).should raise_error( SystemExit ) { |error| error.status.should == 0 }
             processor( arg, 'unknown' ).should raise_error( SystemExit ) { |error| error.status.should == 0 }
           end
@@ -129,7 +129,7 @@ describe Sandbox::CLI do
         
         [ '-H', '--long-help' ].each do |arg|
           it "should show long help for '#{arg}'" do
-            @cli.expects( :puts )
+            @cli.expects( :tell_unless_really_quiet )
             @cli.expects( :long_help )
             processor( arg ).should raise_error( SystemExit ) { |error| error.status.should == 0 }
           end

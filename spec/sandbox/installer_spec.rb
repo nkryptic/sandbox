@@ -34,8 +34,11 @@ describe Sandbox::Installer, "(mocked)" do
     describe "when populate called" do
       it "should call all steps of populate process" do
         @installer = Sandbox::Installer.new
+        @installer.stubs( :tell )
+        @installer.stubs( :target ).returns( '/tmp/sandbox' )
         @installer.expects( :create_directories )
         @installer.expects( :install_scripts )
+        @installer.expects( :install_gemrc )
         @installer.expects( :install_gems )
         @installer.populate
       end
@@ -83,6 +86,29 @@ describe Sandbox::Installer, "(mocked)" do
         file.string.should == @path
       end
     end
+    
+    # install_gemrc
+    describe "when install_gemrc called" do
+      before( :each ) do
+        @path = '/some/new/target'
+        @installer = Sandbox::Installer.new
+        @installer.stubs( :target ).returns( @path )
+      end
+      
+      it "should read template file" do
+        File.expects( :read ).with( regexp_matches( /templates\/gemrc\.erb/ ) ).returns( '' )
+        File.stubs( :open )
+        @installer.install_gemrc
+      end
+      
+      it "should write out gemrc to SANDBOX/.gemrc" do
+        file = StringIO.new
+        File.stubs( :read ).returns( 'gemrc' )
+        File.expects( :open ).with( @path + '/.gemrc', 'w' ).yields( file )
+        @installer.install_gemrc
+        file.string.should == 'gemrc'
+      end
+    end
 
     # install_gems
     describe "when install_gems called" do
@@ -90,7 +116,14 @@ describe Sandbox::Installer, "(mocked)" do
         @installer = Sandbox::Installer.new( :gems => [ 'mygem' ] )
         @installer.stubs( :setup_sandbox_env )
         @installer.stubs( :restore_sandbox_env )
+        @installer.stubs( :tell )
+        @installer.stubs( :tell_unless_really_quiet )
       end
+      
+      # it "should skip install when network is not available" do
+      #   Ping.expects( :pingecho ).with( 'gems.rubyforge.org' ).returns( false )
+      #   @installer.install_gems.should be_false
+      # end
       
       it "should install a good gem" do
         @installer.expects( :shell_out ).with( 'gem install mygem' ).returns( [ true, 'blah' ] )
@@ -99,7 +132,7 @@ describe Sandbox::Installer, "(mocked)" do
       
       it "should gracefully handle a bad gem" do
         @installer.expects( :shell_out ).with( 'gem install mygem' ).returns( [ false, 'blah' ] )
-        @installer.expects( :warn )
+        @installer.expects( :tell_unless_really_quiet ).with( regexp_matches( /failed/ ) )
         @installer.install_gems
       end
     end

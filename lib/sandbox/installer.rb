@@ -1,10 +1,14 @@
 
 require 'fileutils'
+# require 'ping'
+# require 'timeout'
 require 'erb'
 
 module Sandbox
   
   class Installer
+    include Sandbox::Output
+    extend Sandbox::Output
     
     ## CLASS METHODS
     class << self
@@ -27,9 +31,13 @@ module Sandbox
     end
     
     def populate
-      puts "creating sandbox at: #{target}" if Sandbox.verbose?
+      tell( "creating sandbox at: #{target}" )
       create_directories
+      tell( "installing activation script" )
       install_scripts
+      tell( "installing .gemrc" )
+      install_gemrc
+      tell( "installing gems" )
       install_gems
     end
     
@@ -48,6 +56,16 @@ module Sandbox
       FileUtils.ln_s( gembin, bin )
     end
     
+    def install_gemrc
+      filename = File.join( target, '.gemrc' )
+      template = File.read( File.dirname( __FILE__ ) + '/templates/gemrc.erb' )
+      script = ERB.new( template )
+      output = script.result( binding )
+      File.open( filename, 'w' ) do |f|
+        f.write output
+      end
+    end
+    
     def install_scripts
       filename = File.join( target, 'bin', 'activate_sandbox' )
       template = File.read( File.dirname( __FILE__ ) + '/templates/activate_sandbox.erb' )
@@ -61,16 +79,21 @@ module Sandbox
     def install_gems
       # gem = `which gem`.chomp
       # return if gem.empty?
-      puts "installing gems" if Sandbox.verbose?
+      gems = options[ :gems ] || []
+      if gems.size == 0
+        tell( "  nothing to install" )
+        return
+      end
+      
       begin
         setup_sandbox_env
-        options[ :gems ].each do |gem|
-          puts "  gem: #{gem}" if Sandbox.verbose?
+        gems.each do |gem|
+          tell_unless_really_quiet( "  gem: #{gem}" )
           cmd = "gem install #{gem}"
           # cmd = cmd + ' -V' if Sandbox.really_verbose?
           status, output = shell_out( cmd )
           unless status
-            warn "failed to install gem: #{gem}"
+            tell_unless_really_quiet( "    failed to install gem: #{gem}" )
           end
         end
       ensure

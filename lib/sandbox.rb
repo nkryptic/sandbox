@@ -19,7 +19,7 @@ module Sandbox
     end
     
     def quiet?() verbosity < 0 end
-    def really_quiet?() verbosity < 1 end
+    def really_quiet?() verbosity < -1 end
     def verbose?() verbosity > 0 end
     def really_verbose?() verbosity > 1 end
     
@@ -29,5 +29,6 @@ end
 
 require 'sandbox/version'
 require 'sandbox/errors'
+require 'sandbox/output'
 require 'sandbox/installer'
 

@@ -4,9 +4,12 @@ require 'sandbox'
 
 module Sandbox  
   class CLI
+    include Sandbox::Output
+    extend Sandbox::Output
     
     DEFAULTS = {
-      :gems => [ 'rake', ]
+      # :gems => [ 'rake', ]
+      :gems => []
     }
     
     ## CLASS METHODS
@@ -37,13 +40,12 @@ module Sandbox
       def handle_error( error )
         case error
           when Sandbox::Error
-            puts error.message
+            tell_unless_really_quiet( error.message )
           when StandardError #, Timeout::Error
-            message = [ "Error: #{error.message}" ]
-            message.concat( error.backtrace.collect { |bt| "    #{bt}" } ) if Sandbox.really_verbose?
-            puts message.join( "\n" )
+            tell_unless_really_quiet( "Error: #{error.message}" )
+            tell_when_really_verbose( error.backtrace.collect { |bt| "    #{bt}" }.join( "\n" ) ) if error.backtrace
           when Interrupt
-            puts "Interrupted"
+            tell_unless_really_quiet( "Interrupted" )
         else
           raise error
         end
@@ -111,19 +113,19 @@ module Sandbox
         o.separator ""
         
         o.separator "OPTIONS"
-        o.on( '-g', '--gems gem1,gem2', Array, 'Gems to install after sandbox is created. (defaults to [rake])' ) { |gems| @options[ :gems ] = gems }
-        o.on( '-n', '--no-gems', 'Do not install any gems after sandbox is created.)' ) { @options[ :gems ] = [] }
+        o.on( '-g', '--gems gem1,gem2', Array, 'Gems to install after sandbox is created.' ) { |gems| @options[ :gems ] = gems }
+        o.on( '-n', '--no-gems', 'Do not install any gems after sandbox is created.' ) { @options[ :gems ] = [] }
         o.on( '-q', '--quiet', 'Show less output. (multiple allowed)' ) { |f| Sandbox.decrease_verbosity }
         o.on( '-v', '--verbose', 'Show more output. (multiple allowed)' ) { |f| Sandbox.increase_verbosity }
-        o.on_tail( '-h', '--help', 'Show this help message and exit.' ) { puts o; exit }
-        o.on_tail( '-H', '--long-help', 'Show the full description about the program' ) { puts long_help; exit }
-        o.on_tail( '-V', '--version', 'Display the program version and exit.' ) { puts Sandbox::Version::STRING; exit }
+        o.on_tail( '-h', '--help', 'Show this help message and exit.' ) { tell_unless_really_quiet( o ); exit }
+        o.on_tail( '-H', '--long-help', 'Show the full description about the program' ) { tell_unless_really_quiet( long_help ); exit }
+        o.on_tail( '-V', '--version', 'Display the program version and exit.' ) { tell_unless_really_quiet( Sandbox::Version::STRING ); exit }
         o.separator ""
       end
     end
     
     # def show_help
-    #   puts parser
+    #   tell( parser )
     # end
     
     def long_help
