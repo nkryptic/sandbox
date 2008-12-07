@@ -191,13 +191,13 @@ describe Sandbox::Installer, "(mocked)" do
     describe "when shell_out called" do
       it "should record true when successful" do
         @installer = Sandbox::Installer.new
-        result = @installer.shell_out( '/bin/true' )
+        result = @installer.shell_out( 'true' )
         result.first.should be_true
       end
       
       it "should record false when unsuccessful" do
         @installer = Sandbox::Installer.new
-        result = @installer.shell_out( '/bin/false' )
+        result = @installer.shell_out( 'false' )
         result.first.should_not be_true
       end
       
@@ -209,7 +209,7 @@ describe Sandbox::Installer, "(mocked)" do
       
       it "should ignore std error" do
         @installer = Sandbox::Installer.new
-        result = @installer.shell_out( 'ls -d / 1>&2' )
+        result = @installer.shell_out( 'ls -d / 1>/dev/null' )
         result.last.chomp.should == ''
       end
     end
