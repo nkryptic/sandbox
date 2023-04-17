@@ -131,7 +131,7 @@ module Sandbox
     def resolve_target( path )
       # should consider replacing with 'pathname' => Pathname.new( path )
       path = fix_path( path )
-      if File.exists?( path )
+      if File.exist?( path )
         raise Sandbox::Error, "target '#{path}' exists"
       end
       
@@ -153,7 +153,7 @@ module Sandbox
         else
           raise Sandbox::Error, "path '#{path}' has a permission problem"
         end
-      elsif File.exists?( path )
+      elsif File.exist?( path )
         raise Sandbox::Error, "path '#{path}' is not a directory"
       end
       false
