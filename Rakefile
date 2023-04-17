@@ -1,7 +1,7 @@
 require 'rubygems'
 require 'rake'
 
-require 'lib/sandbox' unless defined? Sandbox
+require_relative 'lib/sandbox' unless defined? Sandbox
  
 begin
   require 'echoe'
