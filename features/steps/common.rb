@@ -70,13 +70,13 @@ end
 
 Then %r{^folder '(.*)' is created} do |folder|
   in_project_folder do
-    File.exists?(folder).should be_true
+    File.exist?(folder).should be_true
   end
 end
 
 Then %r{^file '(.*)' (is|is not) created} do |file, is|
   in_project_folder do
-    File.exists?(file).should(is == 'is' ? be_true : be_false)
+    File.exist?(file).should(is == 'is' ? be_true : be_false)
   end
 end
 
@@ -87,8 +87,8 @@ Then %r{^file with name matching '(.*)' is created} do |pattern|
 end
 
 Then %r{gem file '(.*)' and generated file '(.*)' should be the same} do |gem_file, project_file|
-  File.exists?(gem_file).should be_true
-  File.exists?(project_file).should be_true
+  File.exist?(gem_file).should be_true
+  File.exist?(project_file).should be_true
   gem_file_contents = File.read(File.dirname(__FILE__) + "/../../#{gem_file}")
   project_file_contents = File.read(File.join(@active_project_folder, project_file))
   project_file_contents.should == gem_file_contents

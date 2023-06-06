@@ -1,7 +1,7 @@
 require 'rubygems'
 require 'rake'
 
-require 'lib/sandbox' unless defined? Sandbox
+require_relative 'lib/sandbox' unless defined? Sandbox
  
 begin
   require 'echoe'
@@ -57,7 +57,7 @@ Dir[ "#{File.dirname(__FILE__)}/tasks/*.rake" ].sort.each { |ext| load ext }
 #   rdoc.rdoc_files.add( files )
 #   rdoc.main = "README" # page to start on
 #   rdoc.title = "sandbox"
-#   # rdoc.template = File.exists?( t="/Users/chris/ruby/projects/err/rock/template.rb" ) ? t : "/var/www/rock/template.rb"
+#   # rdoc.template = File.exist?( t="/Users/chris/ruby/projects/err/rock/template.rb" ) ? t : "/var/www/rock/template.rb"
 #   rdoc.rdoc_dir = 'doc' # rdoc output folder
 #   rdoc.options << '--inline-source'
 # end
